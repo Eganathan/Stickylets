@@ -1,9 +1,13 @@
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 
+@SuppressWarnings("serial")
 public class Notes extends JFrame implements ActionListener{
+	
+	Color sColor = Color.getHSBColor(80, 40, 30); //
 	
 	private JButton nFrameBtn;
 	
@@ -11,9 +15,12 @@ public class Notes extends JFrame implements ActionListener{
 	Notes() {
 		
 		JFrame x = new JFrame(title);
-		x.setSize(250,100);
+		x.setSize(300,150);
+		x.setLocation(100, 200);
 		
 		nFrameBtn = new JButton("New Note");
+		nFrameBtn.setBackground(sColor);
+		nFrameBtn.setFont( new Font("sans" ,Font.BOLD, 24));
 		nFrameBtn.addActionListener(this);
 		
 		
@@ -27,13 +34,7 @@ public class Notes extends JFrame implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == nFrameBtn) {
 			
-			createnewFrame();
-		}
-		
-	}
-	private void createnewFrame() {
-		new Leafs();
-	}
+			new Leafs(); } }
 	
 	
 
