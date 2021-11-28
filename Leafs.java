@@ -14,7 +14,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
 @SuppressWarnings("serial")
-public class Leafs extends Notes implements ActionListener{
+public class Leafs implements ActionListener{
 
 	//Variables
 	Color dColor = Color.getHSBColor(80, 50, 20);
