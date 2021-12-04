@@ -14,6 +14,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -51,11 +52,12 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
          
 		 //J List 
          list = new JList<>(leafsM);
+         list.setBorder(new EmptyBorder(10,10, 10, 10));
          list.addListSelectionListener(this);
-         //list.setBounds(100,100, 75,75);  
+         list.setBounds(100,100, 75,75);  
          
          //Ading the list
-         x.add(list);  
+         x.add(list,BorderLayout.CENTER);  
 		
 		
 		x.add(nFrameBtn , BorderLayout.NORTH);
@@ -64,6 +66,10 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		x.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
 		
+		
+		while(leafsM.size() > 0) {
+			upDateList();
+		}
 	}
 	
 	/*
@@ -94,6 +100,23 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 	}*/
 	
 	
+	public void upDateList(){
+		
+		if(Objmap.containsKey(list.getSelectedValue())){
+			
+				Objmap.get(list.getSelectedValue()).leafFrame.setVisible(true);
+				Objmap.get(list.getSelectedValue()).upDateTitle();
+				String newKey = Objmap.get(list.getSelectedValue()).upDateTitle();
+				Objmap.put(newKey, Objmap.get(list.getSelectedValue()));
+				
+				leafsM.remove(list.getSelectedIndex());
+				leafsM.addElement(newKey);
+				list.repaint();
+				
+				Objmap.remove(list.getSelectedValue(),Objmap.get(list.getSelectedValue()));
+				System.out.println(Objmap);}
+		
+	}
 		
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -112,6 +135,21 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		if(Objmap.containsKey(list.getSelectedValue())){
 			
 			Objmap.get(list.getSelectedValue()).leafFrame.setVisible(true);
+			Objmap.get(list.getSelectedValue()).upDateTitle();
+			String newKey = Objmap.get(list.getSelectedValue()).upDateTitle();
+			Objmap.put(newKey, Objmap.get(list.getSelectedValue()));
+			
+			leafsM.remove(list.getSelectedIndex());
+			leafsM.addElement(newKey);
+			list.repaint();
+			
+			Objmap.remove(list.getSelectedValue(),Objmap.get(list.getSelectedValue()));
+			System.out.println(Objmap);
+			/*
+			 * Objmap.put(lName, Object);
+		 		;
+			 */
+			
 			//list.addSelectionInterval(0, 0);
 			/*
 			if(Objmap.get(list.getSelectedValue()).tArea.getText() == ""){
