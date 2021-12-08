@@ -1,19 +1,14 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -66,10 +61,6 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		x.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
 		
-		
-		while(leafsM.size() > 0) {
-			upDateList();
-		}
 	}
 	
 	/*
@@ -80,13 +71,15 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 	static void newNote(){
 		//Setting a file value with counter
 		String lName = "My Note 0"+counter;
+		
 		//leafs Object 
 		Leafs Object = new Leafs(lName);
+		
 		//adding to leafsM
 		//leafsM.addElement(lName);
 		//adding to HMap with key and value 
 		Objmap.put(lName, Object);
-		 leafsM.addElement(lName);
+		leafsM.addElement(lName);
 		//list.add(lName, new JButton(lName));
 		
 		;
@@ -102,10 +95,13 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 	
 	public void upDateList(){
 		
+		String tempKey = list.getSelectedValue();
+		
 		if(Objmap.containsKey(list.getSelectedValue())){
 			
 				Objmap.get(list.getSelectedValue()).leafFrame.setVisible(true);
 				Objmap.get(list.getSelectedValue()).upDateTitle();
+				
 				String newKey = Objmap.get(list.getSelectedValue()).upDateTitle();
 				Objmap.put(newKey, Objmap.get(list.getSelectedValue()));
 				
@@ -113,8 +109,9 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 				leafsM.addElement(newKey);
 				list.repaint();
 				
-				Objmap.remove(list.getSelectedValue(),Objmap.get(list.getSelectedValue()));
-				System.out.println(Objmap);}
+				Objmap.remove(tempKey);				
+				System.out.println(Objmap + "inside upDateList()");}
+		
 		
 	}
 		
@@ -123,19 +120,24 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		if(e.getSource() == nFrameBtn) {
 			
 			counter++;
-			newNote();			
-			System.out.println(Objmap);			
+			newNote();		
 		}}
 
 	@Override
+	/*
+	 * List selection event 
+	 * 
+	 */
 	public void valueChanged(ListSelectionEvent e) {
-		// TODO Auto-generated method stub
-		//System.out.println(list.getSelectedIndex());
+		
+		String tempKey = list.getSelectedValue();
 		
 		if(Objmap.containsKey(list.getSelectedValue())){
 			
-			Objmap.get(list.getSelectedValue()).leafFrame.setVisible(true);
-			Objmap.get(list.getSelectedValue()).upDateTitle();
+			Objmap.get(list.getSelectedValue()).upDateTitle(); // updates the Title if the sLen is greater than available 5  
+			Objmap.get(list.getSelectedValue()).leafFrame.setVisible(true); //Sets the objects visibility to true
+			
+			
 			String newKey = Objmap.get(list.getSelectedValue()).upDateTitle();
 			Objmap.put(newKey, Objmap.get(list.getSelectedValue()));
 			
@@ -143,32 +145,8 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 			leafsM.addElement(newKey);
 			list.repaint();
 			
-			Objmap.remove(list.getSelectedValue(),Objmap.get(list.getSelectedValue()));
-			System.out.println(Objmap);
-			/*
-			 * Objmap.put(lName, Object);
-		 		;
-			 */
-			
-			//list.addSelectionInterval(0, 0);
-			/*
-			if(Objmap.get(list.getSelectedValue()).tArea.getText() == ""){
-				
-				
-				//String wRp = Objmap.get(list.getSelectedValue()).tArea.getText().substring(0,10);
-				
-				//Objmap.put(wRp, Objmap.get(list.getSelectedValue()));
-				 //leafsM.addElement(wRp);
-				 
-				 //Objmap.remove(list.getSelectedValue());
-				
-			}else {
-				
-				System.out.println(Objmap.get(list.getSelectedValue()).tArea.getText().substring(0,10));
-				
-			}*/
-			
-		}
+			Objmap.remove(tempKey);
+			}
 		
 	}
 	
