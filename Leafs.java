@@ -17,12 +17,10 @@ import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-@SuppressWarnings("serial")
 public class Leafs implements ActionListener,DocumentListener {
 
 	//Variables
@@ -131,16 +129,19 @@ public class Leafs implements ActionListener,DocumentListener {
 		int sLen = tArea.getText().length(); // getting the curr SLen
 		int end = 0; //Setting the end value of substring VAR
 		
-		if(sLen <= 10 && sLen > 5){
+		if(sLen <= 10 && sLen >= 5){
 			end = sLen;
+			forTitle = tArea.getText().substring(0,end);
 			
 		}else if(sLen >= 10){
 			end = 10;
-		}else {
+			forTitle = tArea.getText().substring(0,end);
+			
+		}else if(sLen < 5){
+			
 			forTitle = leafFrame.getTitle();
 		}
 		
-		forTitle = tArea.getText().substring(0,end);
 		leafFrame.setTitle(forTitle);
 		
 		return forTitle;
