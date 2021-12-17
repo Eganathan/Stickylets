@@ -5,9 +5,10 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -15,27 +16,25 @@ import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-public class Leafs implements ActionListener,DocumentListener {
+public class Leafs implements ActionListener, KeyListener {
 
-	//Variables
+	// Variables
 	Color dColor = Color.getHSBColor(90, 50, 20); // 80, 50, 20
 	Color sColor = Color.getHSBColor(80, 40, 30);
 	Color tColor = Color.getHSBColor(100, 0, 100);
 
-	//Buttons for edit panel
+	// Buttons for edit panel
 	JButton boldBtn; // Bold button
 	JButton italicBtn; // Italic button
 	JButton upperCaseBtn; // Italic button
 	JButton underLineBtn; // underline button
 	JButton strikeThroughBtn; // strike through button
 
-	//Font Variables
+	// Font Variables
 	int dFontDize = 22;
 	int dStyle = 0; // 0 -> plain , 1 -> BOLD , 3 -> italic
 	String fFamily = "Sans";
@@ -46,8 +45,8 @@ public class Leafs implements ActionListener,DocumentListener {
 	Font bFont = new Font(fFamily, Font.BOLD, dFontDize);
 	Font iFont = new Font(fFamily, Font.ITALIC, dFontDize);
 	Font hBFont = new Font(fFamily, Font.CENTER_BASELINE, dFontDize);
-	
-	//Frame
+
+	// Frame
 	JFrame leafFrame;
 
 	// Test Area
@@ -61,30 +60,34 @@ public class Leafs implements ActionListener,DocumentListener {
 	// ** WORKING VARIABLES**//
 	boolean boldBtnActive = false; // 0 -> un-clicked or not clicked | 1-> Clicked and active
 	boolean italicBtnActive = false; // 0 -> un-clicked or not clicked | 1-> Clicked and active
-	
-	HashMap<Integer,Integer> bStart = new HashMap<>();
-	HashMap<Integer,Integer> bEnd = new HashMap<>();
-	
-	//Testing Style doc
+
+	// Testing Style doc
 	StyledDocument styledDocument;
-	
-	//Title
+
+	// Title
 	private String forTitle = "";
+	private TextChangeTemp textChangeListner;
+	private int currID;
 
-	Leafs(String fname) {
+	Leafs(int ID, String titleValue, String textValue, TextChangeTemp tChanged) {
+		currID = ID;
 
-		leafFrame = new JFrame(fname);
+		textChangeListner = tChanged;
+
+		leafFrame = new JFrame(titleValue);
 		leafFrame.setSize(250, 250);
 		leafFrame.setLayout(new BorderLayout());
 		leafFrame.setBackground(dColor);
-		leafFrame.setLocation(450,50);
+		leafFrame.setLocation(450, 50);
 
 		tArea = new JTextPane();
 		tArea.setFont(dFont);
+		tArea.setText(textValue);
 		// tArea.setRequestFocusEnabled(rootPaneCheckingEnabled);
 		tArea.setBackground(dColor);
 		tArea.setBorder(new EmptyBorder(10, 10, 10, 10));
-		tArea.setSize(leafFrame.getWidth(), leafFrame.getHeight());  
+		tArea.addKeyListener(this);
+		tArea.setSize(leafFrame.getWidth(), leafFrame.getHeight());
 
 		ePanel = new JPanel();
 		ePanel.setBackground(sColor);
@@ -110,45 +113,10 @@ public class Leafs implements ActionListener,DocumentListener {
 		leafFrame.add(tArea, BorderLayout.CENTER);
 		leafFrame.add(ePanel, BorderLayout.SOUTH);
 		leafFrame.setResizable(true);
-		leafFrame.setVisible(true);
-		leafFrame.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-		
-		//firstWord = tArea.getText().substring(0,10)}
-		
-		
+		leafFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
 	}
-	
-	
-	
-	/*
-	 * Updates title and as well as ruturns the current substring 
-	 * if the len is 3 then 3 if not then 10.. or 5 etc
-	 */
-	public String upDateTitle(){
-		
-		int sLen = tArea.getText().length(); // getting the curr SLen
-		int end = 0; //Setting the end value of substring VAR
-		
-		if(sLen <= 10 && sLen >= 5){
-			end = sLen;
-			forTitle = tArea.getText().substring(0,end);
-			
-		}else if(sLen >= 10){
-			end = 10;
-			forTitle = tArea.getText().substring(0,end);
-			
-		}else if(sLen < 5){
-			
-			forTitle = leafFrame.getTitle();
-		}
-		
-		leafFrame.setTitle(forTitle);
-		
-		return forTitle;
-	}
-	
-	
-	
+
 	// paints the Buttons to match the same
 	void defaultStyle(JButton obj) {
 		obj.setFont(btnFonts);
@@ -161,13 +129,11 @@ public class Leafs implements ActionListener,DocumentListener {
 		italicBtn.setFont(iFont);
 		ePanel.repaint();
 	}
-	
+
 	/*
-	 *  public void setParagraphAttributes(AttributeSet attr, boolean replace) {
-        int p0 = getSelectionStart();
-        int p1 = getSelectionEnd();
-        StyledDocument doc = getStyledDocument();
-        doc.setParagraphAttributes(p0, p1 - p0, attr, replace);}
+	 * public void setParagraphAttributes(AttributeSet attr, boolean replace) { int
+	 * p0 = getSelectionStart(); int p1 = getSelectionEnd(); StyledDocument doc =
+	 * getStyledDocument(); doc.setParagraphAttributes(p0, p1 - p0, attr, replace);}
 	 */
 
 	void editText(char action, char bol) {
@@ -190,12 +156,8 @@ public class Leafs implements ActionListener,DocumentListener {
 				StyleConstants.setBold(attr, true);
 				tArea.setCharacterAttributes(attr, true);
 				boldBtn.repaint();
-				
-				bStart.put(tArea.getSelectionStart(),tArea.getSelectionEnd()); //Adding B Hash map  start 
-				bEnd.put(tArea.getSelectionEnd(), tArea.getSelectionStart()); //Adding B Hash map  end
-				
 				System.out.println(styledDocument);
-				
+
 				if (italicBtnActive) {
 					StyleConstants.setItalic(attr, true);
 				}
@@ -236,18 +198,14 @@ public class Leafs implements ActionListener,DocumentListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		
-		upDateTitle();
-		
-		
+
 		if (e.getSource() == boldBtn) {
 
 			// BOLD BTN ACTION
 			if (boldBtnActive == false) {
 				editText('b', 't');
 				boldBtnActive = true;
-				
-				
+
 			} else {
 				editText('b', 'f');
 				boldBtnActive = false;
@@ -266,56 +224,45 @@ public class Leafs implements ActionListener,DocumentListener {
 
 		} else if (e.getSource() == strikeThroughBtn) {
 
-			String data = tArea.getText();
-			firstWord = data.substring(0,5);
-			
-			String s= tArea.getText();
-			if(s.length()>0)
-			{
-			FileDialog fd = new FileDialog(leafFrame,"Save File As",FileDialog.SAVE);
-			fd.setFile(firstWord+".txt");
-			fd.setDirectory("c:\\windows\\temp");
-			fd.setVisible(true);
-			String path=fd.getDirectory()+fd.getFile();
+			/*
+			 * String data = tArea.getText(); firstWord = data.substring(0,5);
+			 * 
+			 * String s= tArea.getText(); if(s.length()>0) { FileDialog fd = new
+			 * FileDialog(leafFrame,"Save File As",FileDialog.SAVE);
+			 * fd.setFile(firstWord+".txt"); fd.setDirectory("c:\\windows\\temp");
+			 * fd.setVisible(true); String path=fd.getDirectory()+fd.getFile();
+			 * 
+			 * FileOutputStream fos; try { fos = new FileOutputStream(path);
+			 * System.out.println(s); byte[] b = s.getBytes(); fos.write(b); fos.close(); }
+			 * catch (IOException e1) { // TODO Auto-generated catch block
+			 * e1.printStackTrace(); }}
+			 */
 
-			FileOutputStream fos;
-			try {
-				fos = new FileOutputStream(path);
-				System.out.println(s);
-				byte[] b = s.getBytes();
-				fos.write(b);
-				fos.close();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			
-			
-
-		}}
+		}
 
 		// END OF ACTION PERFORMED METH
+
+		// END OF LEAF CLASS
 	}
 
 	@Override
-	public void insertUpdate(DocumentEvent e) {
+	public void keyTyped(KeyEvent e) {
 		// TODO Auto-generated method stub
-		
+
+		// textChangeListner.OnTextChanged(tArea.getText(),currID);
+
 	}
 
 	@Override
-	public void removeUpdate(DocumentEvent e) {
+	public void keyPressed(KeyEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void changedUpdate(DocumentEvent e) {
+	public void keyReleased(KeyEvent e) {
 		// TODO Auto-generated method stub
-		
-		System.out.println(e);
-		
+		textChangeListner.OnTextChanged(tArea.getText(), currID);
 	}
 
-	// END OF LEAF CLASS
 }
