@@ -1,6 +1,7 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
@@ -17,6 +18,8 @@ import javax.swing.event.ListSelectionListener;
 public class Notes extends JFrame implements ActionListener, ListSelectionListener, TextChangeTemp {
 
 	Color sColor = Color.getHSBColor(80, 40, 30); //
+	Color dColor = Color.getHSBColor(252, 195, 2); // 255,239,175
+	Color eColor = Color.getHSBColor(255, 239, 175);
 
 	private JButton nFrameBtn;
 	static String title = "Sticky Notes";
@@ -25,7 +28,6 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 
 	private HashMap<Integer, String> textHMap = new HashMap<Integer, String>();
 	private HashMap<Integer, String> titleHMap = new HashMap<Integer, String>();
-	private HashMap<Integer, String> creationHMap = new HashMap<Integer, String>();
 
 	private JList<String> list;
 
@@ -38,18 +40,21 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		;
 
 		nFrameBtn = new JButton("New Note"); // Main frame title
-		nFrameBtn.setBackground(sColor); // sets the background
-		nFrameBtn.setFont(new Font("sans", Font.BOLD, 24)); // setting the fonts
+		nFrameBtn.setBackground(dColor); // sets the background
+		nFrameBtn.setFont(new Font("sans", Font.BOLD, 25)); // setting the fonts
 		nFrameBtn.addActionListener(this); // adding action listener to new note button
 
 		// List Model
 		listModal = new DefaultListModel<>();
-		// listModal.addAll(XML.getTitleList());
+
 		// J List
 		list = new JList<>(listModal);
-		list.setBorder(new EmptyBorder(10, 10, 10, 10));
+		list.setBorder(new EmptyBorder(10, 5, 10, 0));
+		list.setFont(new Font("Sans", Font.ITALIC, 15));
+		list.setBackground(eColor);
+		list.setSelectionBackground(Color.WHITE);
+		// list.setSelectionForeground(eColor);
 		list.addListSelectionListener(this);
-		list.setBounds(100, 100, 75, 75);
 
 		// Adding the list
 		x.add(list, BorderLayout.CENTER);
@@ -137,6 +142,7 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		} else {
 
 		}
+
 	}
 
 	@Override
