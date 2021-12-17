@@ -23,7 +23,7 @@ import javax.swing.text.StyledDocument;
 public class Leafs implements ActionListener, KeyListener {
 
 	// Variables
-	Color dColor = Color.getHSBColor(90, 50, 20); // 80, 50, 20
+	Color dColor = Color.getHSBColor(255, 239, 175); // 80, 50, 20
 	Color sColor = Color.getHSBColor(80, 40, 30);
 	Color tColor = Color.getHSBColor(100, 0, 100);
 
@@ -65,7 +65,6 @@ public class Leafs implements ActionListener, KeyListener {
 	StyledDocument styledDocument;
 
 	// Title
-	private String forTitle = "";
 	private TextChangeTemp textChangeListner;
 	private int currID;
 
@@ -128,6 +127,17 @@ public class Leafs implements ActionListener, KeyListener {
 		ePanel.add(obj);
 		italicBtn.setFont(iFont);
 		ePanel.repaint();
+	}
+
+	private void capitalizeText() {
+
+		if (tArea.getText().length() == 1) {
+			char capitalized = tArea.getText().charAt(0);
+			String cap = ("" + capitalized).toUpperCase() + tArea.getText().toString().substring(1);
+
+			tArea.setText(cap);
+		}
+
 	}
 
 	/*
@@ -261,8 +271,11 @@ public class Leafs implements ActionListener, KeyListener {
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		// TODO Auto-generated method stub
-		textChangeListner.OnTextChanged(tArea.getText(), currID);
+
+		strikeThroughBtn.setText("" + tArea.getText().length());
+		strikeThroughBtn.repaint();
+		capitalizeText(); // Capitalize the First Letter using the method
+		textChangeListner.OnTextChanged(tArea.getText(), currID); // updating the text to the Notes for
 	}
 
 }
