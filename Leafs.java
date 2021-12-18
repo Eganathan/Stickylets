@@ -12,6 +12,7 @@ import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.WindowConstants;
@@ -53,7 +54,9 @@ public class Leafs implements ActionListener, KeyListener {
 	JTextPane tArea;
 
 	// Panels
-	JPanel ePanel;
+	JPanel ePanel, eBtnPanel ,updatePanel;
+	
+	JLabel charCountLabel, wordCountLabel;
 
 	String firstWord = "";
 
@@ -73,7 +76,7 @@ public class Leafs implements ActionListener, KeyListener {
 
 		textChangeListner = tChanged;
 
-		leafFrame = new JFrame(titleValue);
+		leafFrame = new JFrame("");
 		leafFrame.setSize(250, 250);
 		leafFrame.setLayout(new BorderLayout());
 		leafFrame.setBackground(dColor);
@@ -89,9 +92,12 @@ public class Leafs implements ActionListener, KeyListener {
 		tArea.setSize(leafFrame.getWidth(), leafFrame.getHeight());
 
 		ePanel = new JPanel();
-		ePanel.setBackground(sColor);
-		ePanel.setSize(leafFrame.getWidth(), 80);
-		ePanel.setLayout(new GridLayout(1, 5));
+		ePanel.setLayout(new BorderLayout());
+		
+		eBtnPanel = new JPanel();
+		eBtnPanel.setBackground(sColor);
+		eBtnPanel.setSize(leafFrame.getWidth(), 80);
+		eBtnPanel.setLayout(new GridLayout(1, 5));
 
 		italicBtn = new JButton("i");
 		boldBtn = new JButton("B");
@@ -108,6 +114,26 @@ public class Leafs implements ActionListener, KeyListener {
 		defaultStyle(underLineBtn);
 		underLineBtn.setFont(hBFont);
 		defaultStyle(strikeThroughBtn);
+		//END of Edit Panel 
+		
+		//update panel
+		updatePanel = new JPanel();
+		updatePanel.setLayout(new GridLayout(1,2));
+		updatePanel.setBounds(5,5,5,5);
+		
+		//, wordCountLabel
+		charCountLabel = new JLabel("Char Count : **");
+		charCountLabel.setFont(new Font("Sans", Font.ITALIC, 10));
+		
+		wordCountLabel = new JLabel("Word Count : **");
+		wordCountLabel.setFont(new Font("Sans", Font.ITALIC, 10));
+		
+		updatePanel.add(charCountLabel);
+		updatePanel.add(wordCountLabel);
+		
+		ePanel.add(eBtnPanel,BorderLayout.NORTH);
+		ePanel.add(updatePanel,BorderLayout.SOUTH);
+		
 
 		leafFrame.add(tArea, BorderLayout.CENTER);
 		leafFrame.add(ePanel, BorderLayout.SOUTH);
@@ -124,9 +150,9 @@ public class Leafs implements ActionListener, KeyListener {
 		obj.setFocusable(false);
 		obj.addActionListener(this);
 		obj.setBorder(new EmptyBorder(5, 5, 5, 5));
-		ePanel.add(obj);
+		eBtnPanel.add(obj);
 		italicBtn.setFont(iFont);
-		ePanel.repaint();
+		eBtnPanel.repaint();
 	}
 
 	private void capitalizeText() {
@@ -138,6 +164,13 @@ public class Leafs implements ActionListener, KeyListener {
 			tArea.setText(cap);
 		}
 
+	}
+	
+	
+	 int getWordCount() {
+		int wCount = 0;
+		//Word Count
+		return wCount;
 	}
 
 	/*
@@ -271,10 +304,10 @@ public class Leafs implements ActionListener, KeyListener {
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-
-		strikeThroughBtn.setText("" + tArea.getText().length());
-		strikeThroughBtn.repaint();
 		capitalizeText(); // Capitalize the First Letter using the method
+		getWordCount(); // word count method
+		wordCountLabel.setText("Char count : " + tArea.getText().length());
+		 
 		textChangeListner.OnTextChanged(tArea.getText(), currID); // updating the text to the Notes for
 	}
 
