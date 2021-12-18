@@ -4,12 +4,18 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.HashMap;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -31,13 +37,17 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 
 	private JList<String> list;
 
+	// Bottem Frame
+	private JPanel btmFrame; // Panel to hold extra items
+	private JLabel notesCounter; // the notes count label
+	private JLabel logUpdater; // log uPdater
+
 	Notes() {
 
 		JFrame x = new JFrame(title);
 		x.setSize(300, 600);
 		x.setLocation(50, 60);
 		x.setLayout(new BorderLayout());
-		;
 
 		nFrameBtn = new JButton("New Note"); // Main frame title
 		nFrameBtn.setBackground(dColor); // sets the background
@@ -56,13 +66,43 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		// list.setSelectionForeground(eColor);
 		list.addListSelectionListener(this);
 
+		// btm Frame
+		btmFrame = new JPanel();
+		btmFrame.setLayout(new BorderLayout());
+		btmFrame.setBorder(new EmptyBorder(5, 5, 5, 5));
+
+		notesCounter = new JLabel("Notes Count : **");
+		notesCounter.setFont(new Font("Sans", Font.ITALIC, 12));
+
+		logUpdater = new JLabel("Good Day ?");
+		logUpdater.setFont(new Font("Sans", Font.ITALIC, 12));
+
+		btmFrame.add(notesCounter, BorderLayout.WEST);
+		btmFrame.add(logUpdater, BorderLayout.EAST);
+
 		// Adding the list
 		x.add(list, BorderLayout.CENTER);
-
+		x.add(btmFrame, BorderLayout.SOUTH);
 		x.add(nFrameBtn, BorderLayout.NORTH);
 
 		x.setVisible(true);
 		x.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
+		
+		
+		//sqlTrail
+		try{  
+			Class.forName("com.mysql.jdbc.Driver");  
+			Connection con= DriverManager.getConnection(  
+			"jdbc:mysql://localhost:3306/sonoo","root","root");  
+			//here sonoo is database name, root is username and password  
+			Statement stmt=con.createStatement();  
+			ResultSet rs=stmt.executeQuery("select * from emp");  
+			while(rs.next())  
+			System.out.println(rs.getInt(1)+"  "+rs.getString(2)+"  "+rs.getString(3));  
+			con.close();  
+			}catch(Exception e){ System.out.println(e);}  
+			 
 	}
 
 	/*
@@ -81,14 +121,17 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		int idName = counter;
 		String newFileName = "";
 		String defaultText = "";
+		String counterLabel = "";
 
 		// Title Generation for new note
 		if (counter <= 9) // checking if the counter is <= 9 then the counter will be 09 , 08, 01 ..etc
 		{
 			newFileName = "My Note 0" + counter;
+			counterLabel = "0" + counter;
 		} else // if higher than 9 then the counter will be 10,11,12...etc
 		{
 			newFileName = "My Note " + counter;
+			counterLabel = "" + counter;
 		}
 
 		// creating anonymous new note here with the parameters
@@ -99,6 +142,8 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		textHMap.put(idName, defaultText); // updating the textHMap with ID and default text
 		listModal.addElement(newFileName);
 		counter++; // incrementing after the object is created successfully
+		notesCounter.setText("Notes Count : " + counterLabel);
+		successMgs("Created Successfully!");
 	}
 
 	private void openNote(int ID, String title, String text) {
@@ -106,9 +151,10 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		// creating anonymous new note here with the parameters
 		Leafs openNote = new Leafs(ID, title, text, this);
 		openNote.leafFrame.setVisible(true);
+		successMgs("Opened Successfully!");
 	}
 
-	public void updateListModal() {
+	private void updateListModal() {
 		listModal.removeAllElements();
 		listModal.addAll(titleHMap.values());
 	}
@@ -175,6 +221,14 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		textHMap.replace(ID, text);
 		updateTitle(ID, text);
 		// System.out.println(textHMap.values()+"** Text **");
+	}
+
+	private void successMgs(String msg) {
+
+		logUpdater.setText(msg);
+		btmFrame.setBackground(new Color(144, 238, 144)); //
+		// btmFrame.setBackground(new Color(204,204,204));
+
 	}
 
 }
