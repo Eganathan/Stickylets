@@ -277,7 +277,7 @@ public class Leafs implements ActionListener, KeyListener {
 			 * 
 			 * FileOutputStream fos; try { fos = new FileOutputStream(path);
 			 * System.out.println(s); byte[] b = s.getBytes(); fos.write(b); fos.close(); }
-			 * catch (IOException e1) { // TODO Auto-generated catch block
+			 * catch (IOException e1) { 
 			 * e1.printStackTrace(); }}
 			 */
 
