@@ -156,8 +156,8 @@ public class DB {
 	boolean updateTextAndTitle(int id, String title, String text){
 		boolean insert = false;
 		dealConn();
-		String sql = "UPDATE test_db.notes_test SET  note_text = '"+ text +"' WHERE note_id = "+id;
-		String sql1 = "UPDATE test_db.notes_test SET  note_title = '" +title+ "' WHERE note_id = "+id;
+		String sql = "UPDATE test_db.notes_test SET  note_text = '"+ text +" ' WHERE note_id = "+id;
+		String sql1 = "UPDATE test_db.notes_test SET  note_title = '" +title+ " ' WHERE note_id = "+id;
 
 		try {
 			
