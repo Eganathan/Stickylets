@@ -335,20 +335,26 @@ public class Leafs implements ActionListener, KeyListener {
 		capitalizeText(); // Capitalize the First Letter using the method
 		getWordCount(); // word count method
 		charCountLabel.setText("Char :" + tArea.getText().length()); 
-	
-		if(tArea.getText().toString().length() > 3) {
-			char currChar = tArea.getText().charAt(tArea.getText().length()-2);
-	if( currChar == ' ' || tArea.getText().toString().length() < 12){
-		if( tArea.getText().toString().length() > 1 && tArea.getText().toString().length() < 12) {
-			leafFrame.setTitle(tArea.getText().toString());
+		
+		int len = tArea.getText().toString().length();
+		
+		if(len >=5 ){
+			
+			char currChar = tArea.getText().charAt(len-1) ;
+		if(currChar  == ' ' || currChar == '.')
+		{
+		
+		Notes.dataBase.updateTextAndTitle(currID, tArea.getText().toString(), tArea.getText().toString());
+		new DB().loadDataFromDB();
+		Notes.updateListModal();
+	}
+		if(len >= 5 && len <= 6) {
+			Notes.dataBase.updateTextAndTitle(currID, tArea.getText().toString(), tArea.getText().toString());
+			new DB().loadDataFromDB();
+			Notes.updateListModal();
 		}
 		
-		new DB().loadDataFromDB();
-		Notes.dataBase.updateTextAndTitle(currID, tArea.getText().toString().toString(), tArea.getText().toString());
-	} }else {
-		
-		//do nothing 
-	}
+		}
 		
 	}
 
