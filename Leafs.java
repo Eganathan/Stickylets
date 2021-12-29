@@ -3,13 +3,18 @@ import java.awt.Color;
 import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import javax.imageio.ImageIO;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -34,9 +39,11 @@ public class Leafs implements ActionListener, KeyListener {
 	JButton upperCaseBtn; // Italic button
 	JButton underLineBtn; // underline button
 	JButton strikeThroughBtn; // strike through button
-
+	JButton deleteBtn;
+	JButton saveBtn;
+	
 	// Font Variables
-	int dFontDize = 22;
+	int dFontDize = 12;
 	int dStyle = 0; // 0 -> plain , 1 -> BOLD , 3 -> italic
 	String fFamily = "Sans";
 	Font dFont = new Font(fFamily, dStyle, dFontDize);
@@ -59,6 +66,7 @@ public class Leafs implements ActionListener, KeyListener {
 	JLabel charCountLabel, wordCountLabel;
 
 	String firstWord = "";
+	
 
 	// ** WORKING VARIABLES**//
 	boolean boldBtnActive = false; // 0 -> un-clicked or not clicked | 1-> Clicked and active
@@ -70,13 +78,14 @@ public class Leafs implements ActionListener, KeyListener {
 	// Title
 	private TextChangeTemp textChangeListner;
 	private int currID;
+	private boolean isNew = false;
 
-	Leafs(int ID, String titleValue, String textValue, TextChangeTemp tChanged) {
+	Leafs(boolean isNew,int ID, String titleValue, String textValue, TextChangeTemp tChanged) {
 		currID = ID;
-
+		isNew = isNew;
 		textChangeListner = tChanged;
 
-		leafFrame = new JFrame("");
+		leafFrame = new JFrame(titleValue);
 		leafFrame.setSize(250, 250);
 		leafFrame.setLayout(new BorderLayout());
 		leafFrame.setBackground(dColor);
@@ -118,18 +127,34 @@ public class Leafs implements ActionListener, KeyListener {
 		
 		//update panel
 		updatePanel = new JPanel();
-		updatePanel.setLayout(new GridLayout(1,2));
-		updatePanel.setBounds(5,5,5,5);
+		updatePanel.setLayout(new GridLayout(1,3));
+		updatePanel.setBackground(Notes.blu);
+		//updatePanel.setBounds(5,5,5,5);
 		
-		//, wordCountLabel
-		charCountLabel = new JLabel("Char Count : **");
-		charCountLabel.setFont(new Font("Sans", Font.ITALIC, 10));
+		//wordCountLabel
+		charCountLabel = new JLabel("Char: " +tArea.getText().toString().length());
+		charCountLabel.setFont(new Font("Sans", Font.ITALIC, 12));
+		charCountLabel.setForeground(Color.white);
+		
+		ImageIcon Delicon = new ImageIcon(getClass().getResource("\\img\\delIcon.png"));
+		deleteBtn = new JButton(Delicon);
+		deleteBtn.setBackground(Notes.blu);
+		deleteBtn.setFocusable(false);
+		deleteBtn.addActionListener(this);
+		
+		ImageIcon saveicon = new ImageIcon(getClass().getResource("\\img\\saveimg.png"));
+		saveBtn = new JButton(saveicon);
+		saveBtn.setBackground(Notes.blu);		
+		saveBtn.setFocusable(false);
+		saveBtn.addActionListener(this);
 		
 		wordCountLabel = new JLabel("Word Count : **");
-		wordCountLabel.setFont(new Font("Sans", Font.ITALIC, 10));
+		wordCountLabel.setFont(new Font("Sans", Font.ITALIC, 15));
 		
 		updatePanel.add(charCountLabel);
-		updatePanel.add(wordCountLabel);
+		//updatePanel.add(wordCountLabel);
+		updatePanel.add(saveBtn);
+		updatePanel.add(deleteBtn);
 		
 		ePanel.add(eBtnPanel,BorderLayout.NORTH);
 		ePanel.add(updatePanel,BorderLayout.SOUTH);
@@ -138,8 +163,8 @@ public class Leafs implements ActionListener, KeyListener {
 		leafFrame.add(tArea, BorderLayout.CENTER);
 		leafFrame.add(ePanel, BorderLayout.SOUTH);
 		leafFrame.setResizable(true);
-		leafFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
+		leafFrame.setDefaultCloseOperation(closeOperation());
+		
 	}
 
 	// paints the Buttons to match the same
@@ -172,6 +197,14 @@ public class Leafs implements ActionListener, KeyListener {
 		//Word Count
 		return wCount;
 	}
+	 
+	 //close operation 
+	 int closeOperation(){
+		 leafFrame.setVisible(false);
+		 leafFrame.dispose();
+		 
+		 return 1;
+	 }
 
 	/*
 	 * public void setParagraphAttributes(AttributeSet attr, boolean replace) { int
@@ -266,21 +299,15 @@ public class Leafs implements ActionListener, KeyListener {
 			} // END OF BOLD BTN ACTION
 
 		} else if (e.getSource() == strikeThroughBtn) {
+		
 
-			/*
-			 * String data = tArea.getText(); firstWord = data.substring(0,5);
-			 * 
-			 * String s= tArea.getText(); if(s.length()>0) { FileDialog fd = new
-			 * FileDialog(leafFrame,"Save File As",FileDialog.SAVE);
-			 * fd.setFile(firstWord+".txt"); fd.setDirectory("c:\\windows\\temp");
-			 * fd.setVisible(true); String path=fd.getDirectory()+fd.getFile();
-			 * 
-			 * FileOutputStream fos; try { fos = new FileOutputStream(path);
-			 * System.out.println(s); byte[] b = s.getBytes(); fos.write(b); fos.close(); }
-			 * catch (IOException e1) { // TODO Auto-generated catch block
-			 * e1.printStackTrace(); }}
-			 */
-
+		} else if (e.getSource() == deleteBtn ) {
+			//deleteBtn
+			Notes.dataBase.deleteRowWithID(currID);
+			closeOperation();
+		}else if (e.getSource() == saveBtn ) {
+			//saveBtn
+			Notes.dataBase.updateTextAndTitle(currID, tArea.getText().toString().toString(), tArea.getText().toString());
 		}
 
 		// END OF ACTION PERFORMED METH
@@ -304,11 +331,25 @@ public class Leafs implements ActionListener, KeyListener {
 
 	@Override
 	public void keyReleased(KeyEvent e) {
+		
 		capitalizeText(); // Capitalize the First Letter using the method
 		getWordCount(); // word count method
-		wordCountLabel.setText("Char count : " + tArea.getText().length());
-		 
-		textChangeListner.OnTextChanged(tArea.getText(), currID); // updating the text to the Notes for
+		charCountLabel.setText("Char :" + tArea.getText().length()); 
+	
+		if(tArea.getText().toString().length() > 3) {
+			char currChar = tArea.getText().charAt(tArea.getText().length()-2);
+	if( currChar == ' ' || tArea.getText().toString().length() < 12){
+		if( tArea.getText().toString().length() > 1 && tArea.getText().toString().length() < 12) {
+			leafFrame.setTitle(tArea.getText().toString());
+		}
+		
+		new DB().loadDataFromDB();
+		Notes.dataBase.updateTextAndTitle(currID, tArea.getText().toString().toString(), tArea.getText().toString());
+	} }else {
+		
+		//do nothing 
+	}
+		
 	}
 
 }
