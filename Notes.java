@@ -1,9 +1,14 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -11,36 +16,47 @@ import java.sql.Statement;
 import java.util.Collection;
 import java.util.HashMap;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 @SuppressWarnings("serial")
-public class Notes extends JFrame implements ActionListener, ListSelectionListener, TextChangeTemp {
+public class Notes extends JFrame implements ActionListener, ListSelectionListener, TextChangeTemp, KeyListener {
 
-	Color sColor = Color.getHSBColor(80, 40, 30); //
-	Color dColor = Color.getHSBColor(252, 195, 2); // 255,239,175
-	Color eColor = Color.getHSBColor(255, 239, 175);
+	Color sColor = Color.getHSBColor(80, 40, 30); // blue 
+	Color dColor = Color.getHSBColor(252, 195, 2); // purple
+	Color eColor = Color.getHSBColor(255, 239, 175); 
+	static Color lpr = new Color (254, 217, 183);
+	static Color blu = new Color(0, 129, 167);
 
 	private JButton nFrameBtn;
-	static String title = "Sticky Notes";
-	public static DefaultListModel<String> listModal;
-	static int counter = 1;
+	 String title = "Sticky Notes";
+	public static  DefaultListModel<String> listModal;
+	
 
-	private HashMap<Integer, String> textHMap = new HashMap<Integer, String>();
-	private HashMap<Integer, String> titleHMap = new HashMap<Integer, String>();
+	public static HashMap<Integer, String> textHMap = new HashMap<Integer, String>();
+	public static HashMap<Integer, String> titleHMap = new HashMap<Integer, String>();
+	public static HashMap<Integer, String> titleSHMap = new HashMap<Integer, String>();
 
-	private JList<String> list;
+	static JList<String> list;
 
 	// Bottem Frame
 	private JPanel btmFrame; // Panel to hold extra items
 	private JLabel notesCounter; // the notes count label
 	private JLabel logUpdater; // log uPdater
+	static DB dataBase = new DB();
+	private JTextField searchField;
+	
+	int counter = dataBase.getNoRows();
 
 	Notes() {
 
@@ -50,27 +66,41 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		x.setLayout(new BorderLayout());
 
 		nFrameBtn = new JButton("New Note"); // Main frame title
-		nFrameBtn.setBackground(dColor); // sets the background
+		nFrameBtn.setBackground(lpr); // sets the background
+		nFrameBtn.setForeground(blu);
+		nFrameBtn.setFocusable(false);
 		nFrameBtn.setFont(new Font("sans", Font.BOLD, 25)); // setting the fonts
 		nFrameBtn.addActionListener(this); // adding action listener to new note button
-
+		
 		// List Model
 		listModal = new DefaultListModel<>();
 
 		// J List
 		list = new JList<>(listModal);
-		list.setBorder(new EmptyBorder(10, 5, 10, 0));
-		list.setFont(new Font("Sans", Font.ITALIC, 15));
-		list.setBackground(eColor);
-		list.setSelectionBackground(Color.WHITE);
-		// list.setSelectionForeground(eColor);
+		list.setBorder(new EmptyBorder(10, 10, 10, 10));
+		list.setFont(new Font("Sans", Font.BOLD, 17));
+		list.setBackground(blu);
+		list.setFixedCellHeight(35);
+		list.setForeground(Color.WHITE);
+		list.setSelectionBackground(lpr);
+		list.setSelectionForeground(blu);
 		list.addListSelectionListener(this);
-
+		list.setLayoutOrientation(JList.VERTICAL);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setViewportView(list);
+		
+	      
+		
 		// btm Frame
 		btmFrame = new JPanel();
 		btmFrame.setLayout(new BorderLayout());
 		btmFrame.setBorder(new EmptyBorder(5, 5, 5, 5));
-
+		
+		searchField = new JTextField();
+		searchField.setFont(new Font("Sans", Font.ITALIC, 12));
+		searchField.addKeyListener(this);
+		
 		notesCounter = new JLabel("Notes Count : **");
 		notesCounter.setFont(new Font("Sans", Font.ITALIC, 12));
 
@@ -78,31 +108,20 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		logUpdater.setFont(new Font("Sans", Font.ITALIC, 12));
 
 		btmFrame.add(notesCounter, BorderLayout.WEST);
+		btmFrame.add(searchField, BorderLayout.NORTH);
 		btmFrame.add(logUpdater, BorderLayout.EAST);
 
 		// Adding the list
-		x.add(list, BorderLayout.CENTER);
+
+
+		x.add(scrollPane, BorderLayout.CENTER);
 		x.add(btmFrame, BorderLayout.SOUTH);
 		x.add(nFrameBtn, BorderLayout.NORTH);
-
 		x.setVisible(true);
+		x.setResizable(false);
 		x.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
-		
-		
-		//sqlTrail
-		try{  
-			Class.forName("com.mysql.jdbc.Driver");  
-			Connection con= DriverManager.getConnection(  
-			"jdbc:mysql://localhost:3306/sonoo","root","root");  
-			//here sonoo is database name, root is username and password  
-			Statement stmt=con.createStatement();  
-			ResultSet rs=stmt.executeQuery("select * from emp");  
-			while(rs.next())  
-			System.out.println(rs.getInt(1)+"  "+rs.getString(2)+"  "+rs.getString(3));  
-			con.close();  
-			}catch(Exception e){ System.out.println(e);}  
-			 
+		dataBase.loadDataFromDB();
 	}
 
 	/*
@@ -118,7 +137,8 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 	 */
 	private void newNote() {
 
-		int idName = counter;
+		int id = counter;
+		System.out.println(counter);
 		String newFileName = "";
 		String defaultText = "";
 		String counterLabel = "";
@@ -134,27 +154,45 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 			counterLabel = "" + counter;
 		}
 
-		// creating anonymous new note here with the parameters
-		Leafs newNote = new Leafs(idName, newFileName, defaultText, this);
-		newNote.leafFrame.setVisible(true);
 
-		titleHMap.put(idName, newFileName); // updating the titleHMap with ID and title
-		textHMap.put(idName, defaultText); // updating the textHMap with ID and default text
-		listModal.addElement(newFileName);
-		counter++; // incrementing after the object is created successfully
-		notesCounter.setText("Notes Count : " + counterLabel);
-		successMgs("Created Successfully!");
+		Leafs newNote = new Leafs(true,id, newFileName, defaultText, this);
+		Notes.dataBase.insertNewNoteDB(newFileName,newFileName);
+		newNote.leafFrame.setVisible(true);
+		counter++;
+		notesCounter.setText("Notes Count : " + counterLabel); //Note Counter Label 
+		successMgs("Created Successfully!"); //btm panel color change
+		
 	}
 
 	private void openNote(int ID, String title, String text) {
-
+		
 		// creating anonymous new note here with the parameters
-		Leafs openNote = new Leafs(ID, title, text, this);
+		Leafs openNote = new Leafs(false,ID, title, text, this);
 		openNote.leafFrame.setVisible(true);
 		successMgs("Opened Successfully!");
 	}
+	
+	private void searchAndUpdateList(String currString) {
+		int searchCounter = 0;
+		titleSHMap.clear();
+		//listModal.addAll(titleHMap.values());
+		
+		//System.out.println("sd"+ " "+ currString);
+		for(Integer title:titleHMap.keySet()) {
+			//System.out.println(title+ " "+titleHMap.get(title).substring(0, currString.length()));
+			
+			if(titleHMap.get(title).substring(0, currString.length()).equalsIgnoreCase(currString)){
+				titleSHMap.put(title,titleHMap.get(title));
+				System.out.println(title+ " "+ titleHMap.get(title));
+				searchCounter++;
+			}
+		}
+		listModal.removeAllElements();
+		listModal.addAll(titleSHMap.values());
+		successMgs( searchCounter+" results matched");
+	}
 
-	private void updateListModal() {
+	static void updateListModal() {
 		listModal.removeAllElements();
 		listModal.addAll(titleHMap.values());
 	}
@@ -166,6 +204,8 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 			// calling the method to create a new note with custom parameters
 			newNote();
 
+		} else if(e.getSource() == searchField) {
+			System.out.println(e.getSource());
 		}
 	}
 
@@ -178,13 +218,14 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 
 		String currKey = list.getSelectedValue();
 		if (list.getValueIsAdjusting() && titleHMap.containsValue(currKey)) {
+			
 			for (int id : titleHMap.keySet()) {
+				
 				if (currKey == titleHMap.get(id)) {
+					
 					openNote(id, titleHMap.get(id), textHMap.get(id));
 				}
 			}
-
-			// System.out.println(titleHMap. + "selected ID ");
 		} else {
 
 		}
@@ -193,42 +234,44 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 
 	@Override
 	public void OnTextChanged(String text, int id) {
-		// TODO Auto-generated method stub
-		updateText(id, text);
-		// System.out.println(text + " | on the ID ->:" + id);
+
 	}
 
-	/*
-	 * gets Invoked every time a key is pressed updates Title to the title hash map
-	 */
-	private void updateTitle(int ID, String text) {
-		String title = text;
 
-		if (text.length() >= 12) // in case the length is larger that 12 [MAX TITLE]
-		{
-			text.substring(0, 12);
-		}
-		titleHMap.replace(ID, title);
-		// System.out.println(titleHMap.values() +"** Titles **");
-		updateListModal();
-	}
-
-	/*
-	 * gets Invoked every time a key is pressed updates the text from the frame
-	 */
-	private void updateText(int ID, String text) // updates the value to the hash map
-	{
-		textHMap.replace(ID, text);
-		updateTitle(ID, text);
-		// System.out.println(textHMap.values()+"** Text **");
-	}
-
-	private void successMgs(String msg) {
+	 void successMgs(String msg) {
 
 		logUpdater.setText(msg);
 		btmFrame.setBackground(new Color(144, 238, 144)); //
 		// btmFrame.setBackground(new Color(204,204,204));
 
 	}
+	
+	//updating counter
+	private void upDateCounter() {
+		counter = dataBase.getNoRows();
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		//searchAndUpdateList(searchField.toString());	
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		
+		if(searchField.getText().length() == 0) {
+			listModal.addAll(titleHMap.values());
+			updateListModal();
+		} else if(searchField.getText().length() >= 1) {
+			searchAndUpdateList(searchField.getText());
+		}
+	}
+
+
 
 }
