@@ -25,6 +25,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -34,6 +35,7 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 
 	Color sColor = Color.getHSBColor(80, 40, 30); // blue 
 	Color dColor = Color.getHSBColor(252, 195, 2); // purple
+	
 	Color eColor = Color.getHSBColor(255, 239, 175); 
 	static Color lpr = new Color (254, 217, 183);
 	static Color blu = new Color(0, 129, 167);
@@ -43,9 +45,9 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 	public static  DefaultListModel<String> listModal;
 	
 
-	public static HashMap<Integer, String> textHMap = new HashMap<Integer, String>();
-	public static HashMap<Integer, String> titleHMap = new HashMap<Integer, String>();
-	public static HashMap<Integer, String> titleSHMap = new HashMap<Integer, String>();
+	public static HashMap<Integer, String> textHMap = new HashMap<Integer, String>(); //tests
+	public static HashMap<Integer, String> titleHMap = new HashMap<Integer, String>(); //titles
+	public static HashMap<Integer, String> titleSHMap = new HashMap<Integer, String>(); //search hashmap
 
 	static JList<String> list;
 
@@ -82,12 +84,13 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		list.setBackground(blu);
 		list.setFixedCellHeight(35);
 		list.setForeground(Color.WHITE);
-		list.setSelectionBackground(lpr);
+		list.setSelectionBackground(Color.white);
 		list.setSelectionForeground(blu);
 		list.addListSelectionListener(this);
 		list.setLayoutOrientation(JList.VERTICAL);
 		
 		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setViewportView(list);
 		
 	      
@@ -101,7 +104,7 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		searchField.setFont(new Font("Sans", Font.ITALIC, 12));
 		searchField.addKeyListener(this);
 		
-		notesCounter = new JLabel("Notes Count : **");
+		notesCounter = new JLabel("Notes Count : " + counter);
 		notesCounter.setFont(new Font("Sans", Font.ITALIC, 12));
 
 		logUpdater = new JLabel("Good Day ?");
@@ -113,10 +116,10 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 
 		// Adding the list
 
-
+		x.add(nFrameBtn, BorderLayout.NORTH);
 		x.add(scrollPane, BorderLayout.CENTER);
 		x.add(btmFrame, BorderLayout.SOUTH);
-		x.add(nFrameBtn, BorderLayout.NORTH);
+		
 		x.setVisible(true);
 		x.setResizable(false);
 		x.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -138,7 +141,7 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 	private void newNote() {
 
 		int id = counter;
-		System.out.println(counter);
+		//System.out.println(counter);
 		String newFileName = "";
 		String defaultText = "";
 		String counterLabel = "";
@@ -158,8 +161,8 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		Leafs newNote = new Leafs(true,id, newFileName, defaultText, this);
 		Notes.dataBase.insertNewNoteDB(newFileName,newFileName);
 		newNote.leafFrame.setVisible(true);
-		counter++;
-		notesCounter.setText("Notes Count : " + counterLabel); //Note Counter Label 
+		upDateCounter();
+		notesCounter.setText("Notes Count : " + counter); //Note Counter Label 
 		successMgs("Created Successfully!"); //btm panel color change
 		
 	}
@@ -173,28 +176,35 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 	}
 	
 	private void searchAndUpdateList(String currString) {
+		boolean isAvailable = false;
 		int searchCounter = 0;
 		titleSHMap.clear();
-		//listModal.addAll(titleHMap.values());
 		
-		//System.out.println("sd"+ " "+ currString);
 		for(Integer title:titleHMap.keySet()) {
 			//System.out.println(title+ " "+titleHMap.get(title).substring(0, currString.length()));
 			
 			if(titleHMap.get(title).substring(0, currString.length()).equalsIgnoreCase(currString)){
 				titleSHMap.put(title,titleHMap.get(title));
-				System.out.println(title+ " "+ titleHMap.get(title));
+				//System.out.println(title+ " "+ titleHMap.get(title));
 				searchCounter++;
+				isAvailable = true;
+			}else {
+				
 			}
 		}
-		listModal.removeAllElements();
-		listModal.addAll(titleSHMap.values());
-		successMgs( searchCounter+" results matched");
+		if(isAvailable) {
+			listModal.removeAllElements();
+			listModal.addAll(titleSHMap.values());
+			successMgs( searchCounter+" results matched");
+		}else {
+			failureMgs("None Found!");
+		}
 	}
 
-	static void updateListModal() {
+	 static void updateListModal() {
 		listModal.removeAllElements();
 		listModal.addAll(titleHMap.values());
+		
 	}
 
 	@Override
@@ -243,12 +253,19 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		logUpdater.setText(msg);
 		btmFrame.setBackground(new Color(144, 238, 144)); //
 		// btmFrame.setBackground(new Color(204,204,204));
+	}
+	 
+	 void failureMgs(String msg) {
 
+		logUpdater.setText(msg);
+		btmFrame.setBackground(new Color(250, 95, 85)); //
+		// btmFrame.setBackground(new Color(204,204,204));
 	}
 	
 	//updating counter
 	private void upDateCounter() {
 		counter = dataBase.getNoRows();
+		notesCounter.setText("Notes Count : " + counter); //Note Counter Label 
 	}
 
 	@Override
@@ -266,10 +283,14 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		
 		if(searchField.getText().length() == 0) {
 			listModal.addAll(titleHMap.values());
+			notesCounter.setText("Notes Count : " + counter);
 			updateListModal();
+			successMgs(" ...");
 		} else if(searchField.getText().length() >= 1) {
 			searchAndUpdateList(searchField.getText());
 		}
+		
+		
 	}
 
 
