@@ -12,6 +12,7 @@ import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.NumberFormat.Style;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,19 +22,36 @@ import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+import javax.swing.text.StyledEditorKit;
 
 public class Leafs implements ActionListener, KeyListener {
-
+	
+	//Tag index
+	int tagIndexS , tagIndexE;
+	
+	//Attributes
+	SimpleAttributeSet atrSet = new SimpleAttributeSet();
+	SimpleAttributeSet DBSet = new SimpleAttributeSet();
+	int lastAttrIndex= 0;
+	
+	StyledDocument Doc;
+	
 	// Variables
 	Color dColor = Color.getHSBColor(255, 239, 175); // 80, 50, 20
 	Color sColor = Color.getHSBColor(80, 40, 30);
@@ -48,8 +66,14 @@ public class Leafs implements ActionListener, KeyListener {
 	JButton deleteBtn;
 	JButton saveBtn;
 	
+	StringBuilder DBTEXT = new StringBuilder();
+	int DBTextIndex = 0;
+	int LIndex = 0;
+	
 	private HashMap<Integer,Integer> boldHMap = new HashMap<>();
-	private HashMap<String,String> italicHmap = new HashMap<>();
+	private HashMap<Integer,Integer> italicHmap = new HashMap<>();
+	private HashMap<Integer,Integer> underlineHMap = new HashMap<>();
+	private HashMap<Integer,Integer> strikeThroughHMap = new HashMap<>();
 	
 	// Font Variables
 	int dFontDize = 12;
@@ -67,20 +91,23 @@ public class Leafs implements ActionListener, KeyListener {
 	JFrame leafFrame;
 
 	// Test Area
-	JTextPane tArea;
+	JTextPane  tArea;
 
 	// Panels
 	JPanel ePanel, eBtnPanel ,updatePanel;
 	
 	JLabel charCountLabel, wordCountLabel;
 
-	String firstWord = "";
+	String DBText;
+	//Bold  and end
+	int BAtt = 0;
+	int BendAtt = 0;
 	
-
 	// ** WORKING VARIABLES**//
 	boolean boldBtnActive = false; // 0 -> un-clicked or not clicked | 1-> Clicked and active
 	boolean italicBtnActive = false; // 0 -> un-clicked or not clicked | 1-> Clicked and active
-
+	boolean isStrikeThroughActive = false;
+	boolean isUnderLineActive = false;
 	// Testing Style doc
 	StyledDocument styledDocument;
 
@@ -93,24 +120,28 @@ public class Leafs implements ActionListener, KeyListener {
 		currID = ID;
 		isNew = isNew;
 		textChangeListner = tChanged;
-
+		DBTEXT.append(textValue);
+		System.out.println(DBTEXT.toString() +" - appended on init");
+		
+		
 		leafFrame = new JFrame(titleValue);
 		leafFrame.setSize(250, 250);
 		leafFrame.setLayout(new BorderLayout());
 		leafFrame.setBackground(dColor);
 		leafFrame.setLocation(450, 50);
 
-		tArea = new JTextPane();
+		tArea =new JTextPane();
+		tArea.setEditorKit(new StyledEditorKit());                    
+	    Doc = tArea.getStyledDocument();       
 		tArea.setFont(taFont);
-		tArea.setText(textValue);
 		tArea.setBackground(dColor);
 		tArea.setBorder(new EmptyBorder(10, 10, 10, 10));
 		tArea.addKeyListener(this);
 		tArea.setSize(leafFrame.getWidth(), leafFrame.getHeight());
 
-		JScrollPane areaScrollPane = new JScrollPane(tArea);
-		areaScrollPane.setVerticalScrollBarPolicy(
-		                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		//JScrollPane areaScrollPane = new JScrollPane(tArea);
+		//areaScrollPane.setVerticalScrollBarPolicy(
+		              //  JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		//areaScrollPane.setPreferredSize(new Dimension(250, 250));
 		
 		ePanel = new JPanel();
@@ -122,8 +153,8 @@ public class Leafs implements ActionListener, KeyListener {
 		eBtnPanel.setLayout(new GridLayout(1, 5));
 		
 		//Strike through FONT
-		Font font = new Font("helvetica", Font.PLAIN, 12);
-		Map  attributes = font.getAttributes();
+		Font Sfont = new Font("helvetica", Font.PLAIN, 12);
+		Map  attributes = Sfont.getAttributes();
 		attributes.put(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
 		Font newFont = new Font(attributes);
 		
@@ -191,7 +222,9 @@ public class Leafs implements ActionListener, KeyListener {
 		ePanel.add(eBtnPanel,BorderLayout.NORTH);
 		ePanel.add(updatePanel,BorderLayout.SOUTH);
 		
-
+		//removing the decorations from the db text
+		removeDecorations(DBTEXT.toString());
+		
 		leafFrame.add(tArea, BorderLayout.CENTER);
 		leafFrame.add(ePanel, BorderLayout.SOUTH);
 		leafFrame.setResizable(true);
@@ -238,121 +271,120 @@ public class Leafs implements ActionListener, KeyListener {
 		 return 1;
 	 }
 
-	/*
-	 * public void setParagraphAttributes(AttributeSet attr, boolean replace) { int
-	 * p0 = getSelectionStart(); int p1 = getSelectionEnd(); StyledDocument doc =
-	 * getStyledDocument(); doc.setParagraphAttributes(p0, p1 - p0, attr, replace);}
-	 */
-
-	void editText(char action, char bol) {
-
-		SimpleAttributeSet attr = new SimpleAttributeSet();
-		
-		int startAtt = 0;
-		int endAtt = 0;
-		// START OF BOLD
-		if (action == 'b') {
-			// BOLD ACTION
-			if (bol == 't') {
-				// BOLD
-				boldBtn.setBackground(tColor);
-				boldBtn.setFont(bFont);
-				StyleConstants.setBold(attr, true);
-				tArea.setCharacterAttributes(attr, true);
-				boldBtn.repaint();
-				
-				//int caretOffset = tArea.getCaretPosition();
-				//int lineNumber = tArea.getLineOfOffset(caretOffset);
-				//int startOffset = tArea.getLineStartOffset(lineNumber);
-				//int endOffset = tArea.getLineEndOffset(lineNumber);
-				startAtt = tArea.getCaretPosition();
-
-				
-
-				if (italicBtnActive) {
-					StyleConstants.setItalic(attr, true);
-				}
-			} else if (bol == 'f') {
-				boldBtn.setBackground(sColor);
-				boldBtn.setFont(btnFonts);
-				StyleConstants.setBold(attr, false);
-				endAtt = tArea.getCaretPosition();
-				boolean x = startAtt >= 0 ? addBoldIndexToMap(startAtt,endAtt):false;
-			}
-			tArea.setCharacterAttributes(attr, false);
-			attr.removeAttributes(attr);
-		} // END OF BOLD
-
-		// START OF Italic
-		if (action == 'i') {
-
-			// Italic ACTION
-			if (bol == 't') {
-
-				// ITALIC
-				italicBtn.setBackground(tColor);
-				StyleConstants.setItalic(attr, true); // setBold(attr, true);
-				tArea.setCharacterAttributes(attr, true);
-				italicBtn.repaint();
-
-				if (boldBtnActive) {
-					StyleConstants.setBold(attr, true);
-				}
-			} else if (bol == 'f') {
-
-				italicBtn.setBackground(sColor);
-				StyleConstants.setItalic(attr, false);
-				tArea.setCharacterAttributes(attr, false);
-				attr.removeAttributes(attr);
-			}
-		} // END OF Italic
-
-	}
-
 	@Override
 	public void actionPerformed(ActionEvent e) {
-
+	
 		if (e.getSource() == boldBtn) {
 			
-			//System.out.println(tArea.getCaretPosition());
-			//tArea.setText("*");
-			
-			
-			
 			// BOLD BTN ACTION
-			if (boldBtnActive == false) {
-				editText('b', 't');
+			if (!boldBtnActive){
+				
+				//if false
 				boldBtnActive = true;
-
-			} else {
-				editText('b', 'f');
+				StyleConstants.setBold(atrSet,true);
+				tArea.setCharacterAttributes(atrSet, true);
+				atrSet.removeAttributes(atrSet);
+				
+				DBTEXT.append("**");
+			}else if(boldBtnActive) {
+				//if true
+				//editText('b', 'f');
 				boldBtnActive = false;
+				DBTEXT.append("**");
+				StyleConstants.setBold(atrSet,false);
+				tArea.setCharacterAttributes(atrSet, false);
+				System.out.println("BOLD"+DBTEXT);
+				
 			} // END OF BOLD BTN ACTION
+			
 
 		} else if (e.getSource() == italicBtn) {
 
 			// ITALIC BTN ACTION
-			if (italicBtnActive == false) {
-				editText('i', 't');
+			if (!italicBtnActive)
+			{  //IF False
 				italicBtnActive = true;
-			} else {
-				editText('i', 'f');
+				italicBtn.setBackground(sColor);
+				StyleConstants.setItalic(atrSet, true);
+				tArea.setCharacterAttributes(atrSet, true);
+				
+				DBTEXT.append("__");
+				
+			} else if (italicBtnActive) {
+				//TRUE 
 				italicBtnActive = false;
-			} // END OF BOLD BTN ACTION
-
+				DBTEXT.append("__");
+				
+				System.out.println("ITALIC"+DBTEXT);
+				
+				StyleConstants.setItalic(atrSet,false);
+				tArea.setCharacterAttributes(atrSet, false);
+				atrSet.removeAttributes(atrSet);
+				// END OF BOLD ITALIC ACTION
+			} 
 		} else if (e.getSource() == strikeThroughBtn) {
+			
+				// Strikethrough BTN ACTION
+						if (!isStrikeThroughActive)
+						{
+							//false
+							tagIndexS = tArea.getCaretPosition();
+							italicBtn.setBackground(sColor);
+							StyleConstants.setStrikeThrough(atrSet, true);
+							tArea.setCharacterAttributes(atrSet, true);
+							
+							
+							DBTEXT.append("$$");
+							isStrikeThroughActive = true;
+						} else if(isStrikeThroughActive){
+							//true
+							isStrikeThroughActive = false;
+							tagIndexE = tArea.getCaretPosition();
+							DBTEXT.append("$$");
+							//DBTextIndex++;
+							System.out.println("Strike through - "+DBTEXT);
+							StyleConstants.setStrikeThrough(atrSet, true);
+							tArea.setCharacterAttributes(atrSet, true);
+							//atrSet.removeAttributes(atrSet);
+						} // END OF BOLD BTN ACTION
+			
+		}else if (e.getSource() == underLineBtn) {
+			
+			// Strikethrough BTN ACTION
+					if (!isUnderLineActive)
+					{
+						//false
+						tagIndexS = tArea.getCaretPosition();
+						underLineBtn.setBackground(sColor);
+						StyleConstants.setUnderline(atrSet, true);
+						tArea.setCharacterAttributes(atrSet, true);
+						
+						DBTEXT.append("~~");
+						isUnderLineActive = true;
+					} else if(isUnderLineActive){
+						//true
+						isUnderLineActive = false;
+						DBTextIndex = tagIndexE; //so next time we  from this location
+						DBTEXT.append("~~");
+						//DBTextIndex++;
+						System.out.println("ULine through - "+DBTEXT);
+						StyleConstants.setUnderline(atrSet, true);
+						tArea.setCharacterAttributes(atrSet, true);
+						//atrSet.removeAttributes(atrSet);
+					} // END OF BOLD BTN ACTION
 		
-
-		} else if (e.getSource() == deleteBtn ) {
+	}else if (e.getSource() == deleteBtn ) {
 			//deleteBtn
 			Notes.dataBase.deleteRowWithID(currID);
 			closeOperation();
-		}else if (e.getSource() == saveBtn ) {
+		}else if (e.getSource() == saveBtn )
+		{
 			
-			//saveBtn
-			Notes.dataBase.updateTextAndTitle(currID, tArea.getText().toString(), tArea.getText().toString());
+			//Notes.dataBase.updateTextAndTitle(currID, tArea.getText().toString(), tArea.getText().toString()); //DBText
+			new DB().updateTextAndTitle(currID, genTitle(), DBTEXT.toString());
 			new DB().loadDataFromDB();
 			Notes.updateListModal();
+			System.out.println("TEXT Saved to DB -- "+ DBTEXT);
 		}
 
 		// END OF ACTION PERFORMED METH
@@ -367,17 +399,15 @@ public class Leafs implements ActionListener, KeyListener {
 
 	@Override
 	public void keyTyped(KeyEvent e) {
-		// TODO Auto-generated method stub
-
-		// textChangeListner.OnTextChanged(tArea.getText(),currID);
 
 	}
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		//TESTING
-		//System.out.println(styledDocument.getProperty(e).toString());
+		
+		
 
+		
 	}
 
 	@Override
@@ -387,54 +417,163 @@ public class Leafs implements ActionListener, KeyListener {
 		getWordCount(); // word count method
 		charCountLabel.setText("Char :" + tArea.getText().length()); 
 		
-		int len = tArea.getText().toString().length();
-		
-		if(len >=5 ){
-			
-			char currChar = tArea.getText().charAt(len-1) ;
-		if(currChar  == ' ' || currChar == '.')
+		if(tArea.getText().charAt(tArea.getText().toString().length()-1) == ' ')
 		{
-			
-		//Notes.dataBase.updateTextAndTitle(currID, genTitle(), tArea.getText().toString());
-		//leafFrame.setTitle(genTitle());
-		//new DB().loadDataFromDB();
-		//Notes.updateListModal();
-	}
-		if(len >= 5 && len <= 6) {
-			Notes.dataBase.updateTextAndTitle(currID, genTitle(), tArea.getText().toString());
-			new DB().loadDataFromDB();
-			Notes.updateListModal();
+			//Notes.dataBase.updateTextAndTitle(currID, genTitle(), DBTEXT.toString());
+			//leafFrame.setTitle(genTitle());
+			//new DB().loadDataFromDB();
+			//Notes.updateListModal();
+			//System.out.println("updating to DB inside the key event -- "+DBTEXT.toString());
 		}
 		
-		}
+		DBTEXT.append(tArea.getText().charAt(tArea.getText().length()-1));
+		//tagIndexS = tArea.getCaretPosition();
+		System.out.println("loading the db text"+ DBTEXT.toString());
 		
-		//System.out.println(tArea.);
-	}
+		}			
 	
-	//adding the bold index
-	boolean addBoldIndexToMap(int start, int end) {
-		boolean isValid = start+end >= 1 ? true:false; 
-		boldHMap.put(start, end);
-		return isValid;
-	}
 	
-	//removing the bold index
-	boolean removeBoldIndexToMap(int start) {
-		boolean isValid = start >= 1 ? true:false; 
-		boldHMap.remove(start);
-		return isValid;
-	}
 	
-	//getting the start index
-	Set<Integer> getBoldStartIndexFromMap() {
-		boolean isValid = boldHMap.size() >= 1 ? true:false; 
-		return boldHMap.keySet();
-	}
+	//set attributes to the text from the DB
+	void removeDecorations(String input){
+	    
+		System.out.println("TEXT FROM to DB -- "+input);
+		
+	    MutableAttributeSet normal = new SimpleAttributeSet();
+	    StyleConstants.setForeground(normal, Color.black);
+	    
+	    MutableAttributeSet bold = new SimpleAttributeSet();
+	    StyleConstants.setBold(bold, true);
+	    
+	    MutableAttributeSet italic = new SimpleAttributeSet();
+	    StyleConstants.setItalic(italic, true);
+	    
+	    MutableAttributeSet sThroug = new SimpleAttributeSet();
+	    StyleConstants.setStrikeThrough(sThroug, true);
+	    
+	    MutableAttributeSet uLine = new SimpleAttributeSet();
+	    StyleConstants.setUnderline(uLine, true);
+
+		StringBuilder result = new StringBuilder(); // string builder 
+		
+		boolean attrP = false;
+		
+		boolean isB = false;
+		boolean isI = false;
+		boolean isU = false;
+		boolean isS = false;
 	
-	//Getting the ending
-		Collection<Integer> getBoldEndIndexFromMap() {
-			boolean isValid = boldHMap.size() >= 1 ? true:false; 
-			return boldHMap.values();
-		}
+			for(int cIndex = 0; cIndex < input.length()-1; cIndex++)
+			{
+				String key = String.valueOf( input.charAt(cIndex))+String.valueOf( input.charAt(cIndex+1));
+				char cChar = input.charAt(cIndex);
+				
+				if(key.equals("**"))
+				{
+					if(attrP)  
+					{
+						attrP = false;
+						isB = false;
+					}else {
+						isB = true;
+						attrP = true;
+					}
+					++cIndex;
+				}else if(key.equals("$$"))
+				{
+		
+					if(attrP)  
+					{
+						attrP = false;
+						isS = false;
+					}else {
+						isS = true;
+						attrP = true;
+					}
+					
+					++cIndex;
+					
+				}else if(key.equals("__"))
+				{
+		
+					if(attrP)  
+					{
+						attrP = false;
+					}else {
+						isI = true;
+						attrP = true;
+					}
+					
+					++cIndex;
+					
+				}else if(key.equals("~~"))
+				{
+		
+					if(attrP)  
+					{
+						attrP = false;
+						isU = false;
+					}else {
+						isU = true;
+						attrP = true;
+					}
+					
+					++cIndex;
+					
+				}
+				
+				
+				//checking the style and appending
+				if(true)
+				{
+						if( cChar !=  36 && cChar !=  42 && cChar !=  95 && cChar !=  126 )//(input.charAt(cIndex) >= 65 || input.charAt(cIndex) <= 90 || input.charAt(cIndex) >=97 || input.charAt(cIndex) <= 122)
+						{
+							
+							if (isB)
+								{
+								append(Doc, bold, String.valueOf(input.charAt(cIndex)));
+								result.append(cChar);
+								}
+							else if(isI)
+							{
+							append(Doc, italic, String.valueOf(input.charAt(cIndex)));
+							result.append(cChar);
+							}
+							else if(isU)
+							{
+							append(Doc, uLine, String.valueOf(input.charAt(cIndex)));
+							result.append(cChar);
+							}
+							else if(isS)
+							{
+							append(Doc, sThroug, String.valueOf(input.charAt(cIndex)));
+							result.append(cChar);
+							}
+							else{
+									result.append(cChar);
+									System.out.println(input.charAt(cIndex) +" ---indexed");
+									append(Doc, normal, String.valueOf(input.charAt(cIndex)));
+									
+								}
+						}	
+					}	
+			}
+	System.out.println("TEXT to Screen -- "+ result.toString());
+	//tArea.setText(result.toString());
+	tArea.setDocument(Doc);
+	tArea.repaint();
+	tagIndexS =  tArea.getText().length()-1;
+	
+}
+
+	  private void append(StyledDocument doc, AttributeSet style, String text) {
+		    try {
+		        
+		    	Doc.insertString(doc.getLength(), text, style);
+		    } catch (BadLocationException ex) {
+		        ex.printStackTrace();
+		    }
+		  }
+	
 
 }
