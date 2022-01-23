@@ -2,6 +2,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -43,6 +44,7 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 	private JButton nFrameBtn;
 	 String title = "Sticky Notes";
 	public static  DefaultListModel<String> listModal;
+	JFrame x;
 	
 
 	public static HashMap<Integer, String> textHMap = new HashMap<Integer, String>(); //tests
@@ -62,7 +64,7 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 
 	Notes() {
 
-		JFrame x = new JFrame(title);
+		 x = new JFrame(title);
 		x.setSize(300, 600);
 		x.setLocation(50, 60);
 		x.setLayout(new BorderLayout());
@@ -109,9 +111,22 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 
 		logUpdater = new JLabel("Good Day ?");
 		logUpdater.setFont(new Font("Sans", Font.ITALIC, 12));
-
-		btmFrame.add(notesCounter, BorderLayout.WEST);
+		
+		//new frame
+		JPanel menuFrame = new JPanel();
+		menuFrame.setLayout(new GridLayout(2,1));
+		menuFrame.setBorder(new EmptyBorder(1, 1, 1, 1));
+		
+		JButton trashBtn = new JButton("Recycle");
+		menuFrame.add(trashBtn);
+		
+		JButton sortBtn = new JButton("a-z");
+		menuFrame.add(sortBtn);
+		
+		
 		btmFrame.add(searchField, BorderLayout.NORTH);
+		btmFrame.add(notesCounter, BorderLayout.WEST);
+		btmFrame.add(menuFrame, BorderLayout.CENTER);
 		btmFrame.add(logUpdater, BorderLayout.EAST);
 
 		// Adding the list
@@ -204,6 +219,7 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 	 static void updateListModal() {
 		listModal.removeAllElements();
 		listModal.addAll(titleHMap.values());
+		list.repaint();
 		
 	}
 
