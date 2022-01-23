@@ -129,8 +129,8 @@ public class DB {
 		
 	void loadDataFromDB() {
 		dealConn();
-		String sql = "SELECT * FROM test_db.notes_test ";
-		String res;
+		String sql = "SELECT * FROM test_db.notes_test WHERE intrash = 0;";
+		
 		Notes.textHMap.clear();
 		Notes.textHMap.clear();
 		try {
@@ -171,7 +171,7 @@ public class DB {
 			
 			System.out.println(s1+" "+ s2 );
 			Notes.titleHMap.replace(id,title);
-			Notes.textHMap.replace(id, sql1);
+			Notes.textHMap.replace(id, text);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -184,7 +184,7 @@ public class DB {
 	boolean deleteRowWithID(int id){
 		boolean insert = false;
 		dealConn();
-		String sql = "DELETE FROM test_db.notes_test WHERE note_id = "+id;
+		String sql = "UPDATE test_db.notes_test SET intrash = 1 where note_id ="+id;
 		//DELETE FROM `table_name` [WHERE condition];
 		try {
 			
