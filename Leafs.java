@@ -106,7 +106,6 @@ public class Leafs implements ActionListener, KeyListener {
 		isNew = isNew;
 		textChangeListner = tChanged;
 		DBTEXT.append(textValue);
-		//System.out.println(DBTEXT.toString() + " - appended on init");
 
 		leafFrame = new JFrame(titleValue);
 		leafFrame.setSize(250, 250);
@@ -249,7 +248,7 @@ public class Leafs implements ActionListener, KeyListener {
 		leafFrame.setVisible(false);
 		leafFrame.dispose();
 		Notes.reload();
-		
+
 		return 1;
 	}
 
@@ -275,7 +274,6 @@ public class Leafs implements ActionListener, KeyListener {
 				DBTEXT.append("**");
 				StyleConstants.setBold(atrSet, false);
 				tArea.setCharacterAttributes(atrSet, false);
-				System.out.println("BOLD" + DBTEXT);
 
 			} // END OF BOLD BTN ACTION
 
@@ -294,8 +292,6 @@ public class Leafs implements ActionListener, KeyListener {
 				// TRUE
 				italicBtnActive = false;
 				DBTEXT.append("__");
-
-				System.out.println("ITALIC" + DBTEXT);
 
 				StyleConstants.setItalic(atrSet, false);
 				tArea.setCharacterAttributes(atrSet, false);
@@ -319,8 +315,7 @@ public class Leafs implements ActionListener, KeyListener {
 				isStrikeThroughActive = false;
 				tagIndexE = tArea.getCaretPosition();
 				DBTEXT.append("$$");
-				// DBTextIndex++;
-				System.out.println("Strike through - " + DBTEXT);
+
 				StyleConstants.setStrikeThrough(atrSet, true);
 				tArea.setCharacterAttributes(atrSet, true);
 				// atrSet.removeAttributes(atrSet);
@@ -344,7 +339,6 @@ public class Leafs implements ActionListener, KeyListener {
 				DBTextIndex = tagIndexE; // so next time we from this location
 				DBTEXT.append("~~");
 				// DBTextIndex++;
-				System.out.println("ULine through - " + DBTEXT);
 				StyleConstants.setUnderline(atrSet, true);
 				tArea.setCharacterAttributes(atrSet, true);
 				// atrSet.removeAttributes(atrSet);
@@ -383,11 +377,11 @@ public class Leafs implements ActionListener, KeyListener {
 	@Override
 	public void keyPressed(KeyEvent e) {
 
-		 if(e.getKeyCode()==KeyEvent.VK_BACK_SPACE){
-             
-			 DBTEXT.deleteCharAt(DBTEXT.length()-1);
-        }
-		 
+		if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+
+			DBTEXT.deleteCharAt(DBTEXT.length() - 1);
+		}
+
 	}
 
 	@Override
@@ -397,25 +391,21 @@ public class Leafs implements ActionListener, KeyListener {
 		getWordCount(); // word count method
 		charCountLabel.setText("Char :" + tArea.getText().length());
 
-		if (tArea.getText().charAt(tArea.getText().toString().length() - 1) == ' ' && e.getKeyCode() != KeyEvent.VK_BACK_SPACE && e.getKeyCode() != 16 && e.getKeyCode() != 11  )
-		{
+		if (tArea.getText().charAt(tArea.getText().toString().length() - 1) == ' '
+				&& e.getKeyCode() != KeyEvent.VK_BACK_SPACE && e.getKeyCode() != 16 && e.getKeyCode() != 11) {
 			Notes.dataBase.updateTextAndTitle(currID, genTitle(), DBTEXT.toString());
 			leafFrame.setTitle(genTitle());
 			new DB().loadDataFromDB();
 			Notes.updateListModal();
-			//System.out.println("updating to DB inside the key event --"+DBTEXT.toString());
 		}
-		
-		if(e.getKeyCode() != KeyEvent.VK_BACK_SPACE && e.getKeyCode() != 16 && e.getKeyCode() != 11)
-		DBTEXT.append(tArea.getText().charAt(tArea.getText().length() - 1));
-		System.out.println("loading the db text" + DBTEXT.toString());
+
+		if (e.getKeyCode() != KeyEvent.VK_BACK_SPACE && e.getKeyCode() != 16 && e.getKeyCode() != 11)
+			DBTEXT.append(tArea.getText().charAt(tArea.getText().length() - 1));
 
 	}
 
 	// set attributes to the text from the DB
 	void removeDecorations(String input) {
-
-		System.out.println("TEXT FROM to DB -- " + input);
 
 		MutableAttributeSet normal = new SimpleAttributeSet();
 		StyleConstants.setForeground(normal, Color.black);
@@ -515,7 +505,6 @@ public class Leafs implements ActionListener, KeyListener {
 			}
 
 		}
-		System.out.println("TEXT to Screen -- " + result.toString());
 		// tArea.setText(result.toString());
 		tArea.setDocument(Doc);
 		tArea.repaint();
