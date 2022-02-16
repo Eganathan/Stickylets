@@ -5,4 +5,4 @@ public class Stickylets {
 		N.setTitle("Stickylets V.002");
 
 	}
-}
+} 

@@ -78,15 +78,14 @@ public class DB {
 			
 			dealConn();
 			int rows = 0;
-			String res = "";
 			//SELECT CustomerName, City FROM Customers;
-			String sql = "SELECT COUNT(*) FROM "+ dataBaseNdTblName;
+			String sql = "SELECT note_id FROM test_db.notes_test order by note_id desc limit 1;";
 			
 			try {
 				Statement statement = conn.prepareStatement(sql);
-				ResultSet outputSet = statement.executeQuery(sql); //execute(sql);
+				ResultSet outputSet = statement.executeQuery(sql);
 				while(outputSet.next()) {
-				res = outputSet.getString(1);
+					rows = Integer.valueOf(outputSet.getString(1));
 				}
 				statement.close();
 			} catch (SQLException e) {
@@ -94,13 +93,11 @@ public class DB {
 				e.printStackTrace();
 			}
 			
-			if(Integer.valueOf(res) == 0) {
+			if(rows == 0) {
 				rows = 1;
-			}else {
-				rows = Integer.valueOf(res);
 			}
-			
-			
+			rows++;
+			System.out.println(rows+" Counter");
 			return rows;
 		}
 		
@@ -115,7 +112,6 @@ public class DB {
 				conn.close();
 				isConnected = false;
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			
 			}	
@@ -127,11 +123,12 @@ public class DB {
 			
 		}
 		
-	void loadDataFromDB() {
+	void loadDataFromDB()
+	{
 		dealConn();
 		String sql = "SELECT * FROM test_db.notes_test WHERE intrash = 0;";
 		
-		Notes.textHMap.clear();
+		Notes.titleHMap.clear();
 		Notes.textHMap.clear();
 		try {
 			Statement statement = conn.prepareStatement(sql);
@@ -149,7 +146,33 @@ public class DB {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		loadDELDataFromDB() ;
 		Notes.updateListModal();
+		
+	}
+	
+	void loadDELDataFromDB() {
+		dealConn();
+		String sql = "SELECT * FROM test_db.notes_test WHERE intrash >= 1;";
+		
+		Notes.titleSHMapDEL.clear();
+		Notes.textSHMapDEL.clear();
+		try {
+			Statement statement = conn.prepareStatement(sql);
+			ResultSet outputSet = statement.executeQuery(sql); 
+			while(outputSet.next()) {
+				
+			int id = outputSet.getInt("note_id");
+			String title = 	outputSet.getString("note_title"); //
+			String text = 	outputSet.getString("note_text");
+			
+			Notes.titleSHMapDEL.put(id,title);
+			Notes.textSHMapDEL.put(id,text);
+			}
+			statement.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
@@ -200,6 +223,48 @@ public class DB {
 		
 		Notes.updateListModal();
 		return insert;
+	}
+	
+	void updateRestore(int id, int action, String title,String text){
+		boolean insert = false;
+		dealConn();
+		if(action == 1) {
+
+			String sql = "UPDATE test_db.notes_test SET  intrash = 0  WHERE note_id = "+id;
+
+			try {
+				
+				Statement statement = conn.prepareStatement(sql);
+				int s1 = statement.executeUpdate(sql);//execute(sql);
+				Notes.titleHMap.put(id,title);
+				Notes.textHMap.put(id, text);
+				statement.close();
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+		}else if(action >= 2)
+		{
+
+			String sql = "DELETE FROM test_db.notes_test WHERE note_id = "+id;
+			Notes.titleSHMapDEL.remove(id);
+			Notes.textSHMapDEL.remove(id);
+			try {
+				
+				Statement statement = conn.prepareStatement(sql);
+				int s1 = statement.executeUpdate(sql);//execute(sql);
+				statement.close();
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+		}
+			
+		
+		
+		Notes.updateListModal();
 	}
 
     

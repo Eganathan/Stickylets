@@ -1,6 +1,7 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Insets;
@@ -34,40 +35,49 @@ import javax.swing.event.ListSelectionListener;
 @SuppressWarnings("serial")
 public class Notes extends JFrame implements ActionListener, ListSelectionListener, TextChangeTemp, KeyListener {
 
-	Color sColor = Color.getHSBColor(80, 40, 30); // blue 
+	Color sColor = Color.getHSBColor(80, 40, 30); // blue
 	Color dColor = Color.getHSBColor(252, 195, 2); // purple
-	
-	Color eColor = Color.getHSBColor(255, 239, 175); 
-	static Color lpr = new Color (254, 217, 183);
+
+	Color eColor = Color.getHSBColor(255, 239, 175);
+	static Color lpr = new Color(254, 217, 183);
 	static Color blu = new Color(0, 129, 167);
 
 	private JButton nFrameBtn;
-	 String title = "Sticky Notes";
-	public static  DefaultListModel<String> listModal;
+	String title = "Sticky Notes";
+	public static DefaultListModel<String> listModal;
 	JFrame x;
-	
 
-	public static HashMap<Integer, String> textHMap = new HashMap<Integer, String>(); //tests
-	public static HashMap<Integer, String> titleHMap = new HashMap<Integer, String>(); //titles
-	public static HashMap<Integer, String> titleSHMap = new HashMap<Integer, String>(); //search hashmap
+	boolean recycleMod = false;
+
+	public static HashMap<Integer, String> textHMap = new HashMap<Integer, String>(); // texts
+	public static HashMap<Integer, String> titleHMap = new HashMap<Integer, String>(); // titles
+
+	public static HashMap<Integer, String> titleSHMap = new HashMap<Integer, String>(); // search hashmap
+
+	public static HashMap<Integer, String> titleSHMapDEL = new HashMap<Integer, String>(); // deleted hashmap
+	public static HashMap<Integer, String> textSHMapDEL = new HashMap<Integer, String>(); // deleted hashmap
 
 	static JList<String> list;
 
-	// Bottem Frame
+	//Bottom Frame
 	private JPanel btmFrame; // Panel to hold extra items
 	private JLabel notesCounter; // the notes count label
 	private JLabel logUpdater; // log uPdater
 	static DB dataBase = new DB();
 	private JTextField searchField;
-	
+
+	JButton trashBtn;
+	JPanel bottom;
+
 	int counter = dataBase.getNoRows();
 
 	Notes() {
 
-		 x = new JFrame(title);
+		x = new JFrame(title);
 		x.setSize(300, 600);
 		x.setLocation(50, 60);
 		x.setLayout(new BorderLayout());
+		// setBorder(new EmptyBorder(0, 0, 0, 0));
 
 		nFrameBtn = new JButton("New Note"); // Main frame title
 		nFrameBtn.setBackground(lpr); // sets the background
@@ -75,13 +85,13 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		nFrameBtn.setFocusable(false);
 		nFrameBtn.setFont(new Font("sans", Font.BOLD, 25)); // setting the fonts
 		nFrameBtn.addActionListener(this); // adding action listener to new note button
-		
+
 		// List Model
 		listModal = new DefaultListModel<>();
 
 		// J List
 		list = new JList<>(listModal);
-		list.setBorder(new EmptyBorder(10, 10, 10, 10));
+
 		list.setFont(new Font("Sans", Font.BOLD, 17));
 		list.setBackground(blu);
 		list.setFixedCellHeight(35);
@@ -90,55 +100,69 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		list.setSelectionForeground(blu);
 		list.addListSelectionListener(this);
 		list.setLayoutOrientation(JList.VERTICAL);
-		
+
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setViewportView(list);
-		
-	      
-		
+
 		// btm Frame
 		btmFrame = new JPanel();
 		btmFrame.setLayout(new BorderLayout());
-		btmFrame.setBorder(new EmptyBorder(5, 5, 5, 5));
-		
+		btmFrame.setBorder(new EmptyBorder(1, 3, 3, 3));
+
+		// MENU FRAME
+		JPanel menuFrame = new JPanel();
+		menuFrame.setLayout(new GridLayout(1, 5));
+		menuFrame.setBorder(new EmptyBorder(1, 1, 1, 1));
+
+		trashBtn = new JButton("Recycle");
+		trashBtn.addActionListener(this);
+
+		JButton sortBtn = new JButton("a-z");
+		JButton resentBtn = new JButton("L-s");
+		JButton oldestBtn = new JButton("oldest");
+		menuFrame.add(trashBtn);
+		menuFrame.add(sortBtn);
+		menuFrame.add(resentBtn);
+		menuFrame.add(oldestBtn);
+
+		JPanel top = new JPanel();
+
+		JPanel center = new JPanel();
+		center.setLayout(new BorderLayout());
 		searchField = new JTextField();
 		searchField.setFont(new Font("Sans", Font.ITALIC, 12));
 		searchField.addKeyListener(this);
-		
+		center.add(searchField, BorderLayout.CENTER);
+
+		// 3rd ROW
+		bottom = new JPanel();
+		bottom.setLayout(new GridLayout(1, 2));
+		bottom.setMaximumSize(new Dimension(5, 5));
+		bottom.setOpaque(true);
 		notesCounter = new JLabel("Notes Count : " + counter);
 		notesCounter.setFont(new Font("Sans", Font.ITALIC, 12));
 
 		logUpdater = new JLabel("Good Day ?");
 		logUpdater.setFont(new Font("Sans", Font.ITALIC, 12));
-		
-		//new frame
-		JPanel menuFrame = new JPanel();
-		menuFrame.setLayout(new GridLayout(2,1));
-		menuFrame.setBorder(new EmptyBorder(1, 1, 1, 1));
-		
-		JButton trashBtn = new JButton("Recycle");
-		menuFrame.add(trashBtn);
-		
-		JButton sortBtn = new JButton("a-z");
-		menuFrame.add(sortBtn);
-		
-		
-		btmFrame.add(searchField, BorderLayout.NORTH);
-		btmFrame.add(notesCounter, BorderLayout.WEST);
-		btmFrame.add(menuFrame, BorderLayout.CENTER);
-		btmFrame.add(logUpdater, BorderLayout.EAST);
+		bottom.add(notesCounter);
+		bottom.add(logUpdater);
+		// END OF 3rd ROW
+
+		btmFrame.add(menuFrame, BorderLayout.NORTH);
+		btmFrame.add(center, BorderLayout.CENTER);
+		btmFrame.add(bottom, BorderLayout.SOUTH);
 
 		// Adding the list
 
 		x.add(nFrameBtn, BorderLayout.NORTH);
 		x.add(scrollPane, BorderLayout.CENTER);
 		x.add(btmFrame, BorderLayout.SOUTH);
-		
+
 		x.setVisible(true);
 		x.setResizable(false);
 		x.setDefaultCloseOperation(EXIT_ON_CLOSE);
-		
+
 		dataBase.loadDataFromDB();
 	}
 
@@ -156,7 +180,7 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 	private void newNote() {
 
 		int id = counter;
-		//System.out.println(counter);
+		// System.out.println(counter);
 		String newFileName = "";
 		String defaultText = "";
 		String counterLabel = "";
@@ -172,55 +196,54 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 			counterLabel = "" + counter;
 		}
 
-
-		Leafs newNote = new Leafs(true,id, newFileName, defaultText, this);
-		Notes.dataBase.insertNewNoteDB(newFileName,newFileName);
+		Leafs newNote = new Leafs(true, id, newFileName, defaultText, this);
+		Notes.dataBase.insertNewNoteDB(newFileName, newFileName);
 		newNote.leafFrame.setVisible(true);
 		upDateCounter();
-		notesCounter.setText("Notes Count : " + counter); //Note Counter Label 
-		successMgs("Created Successfully!"); //btm panel color change
-		
+		notesCounter.setText("Notes Count : " + counter); // Note Counter Label
+		successMgs("Created Successfully!"); // btm panel color change
+
 	}
 
 	private void openNote(int ID, String title, String text) {
-		
+
 		// creating anonymous new note here with the parameters
-		Leafs openNote = new Leafs(false,ID, title, text, this);
+		Leafs openNote = new Leafs(false, ID, title, text, this);
 		openNote.leafFrame.setVisible(true);
 		successMgs("Opened Successfully!");
 	}
-	
+
 	private void searchAndUpdateList(String currString) {
 		boolean isAvailable = false;
 		int searchCounter = 0;
 		titleSHMap.clear();
-		
-		for(Integer title:titleHMap.keySet()) {
-			//System.out.println(title+ " "+titleHMap.get(title).substring(0, currString.length()));
-			
-			if(titleHMap.get(title).substring(0, currString.length()).equalsIgnoreCase(currString)){
-				titleSHMap.put(title,titleHMap.get(title));
-				//System.out.println(title+ " "+ titleHMap.get(title));
+
+		for (Integer title : titleHMap.keySet()) {
+			// System.out.println(title+ " "+titleHMap.get(title).substring(0,
+			// currString.length()));
+
+			if (titleHMap.get(title).substring(0, currString.length()).equalsIgnoreCase(currString)) {
+				titleSHMap.put(title, titleHMap.get(title));
+				// System.out.println(title+ " "+ titleHMap.get(title));
 				searchCounter++;
 				isAvailable = true;
-			}else {
-				
+			} else {
+
 			}
 		}
-		if(isAvailable) {
+		if (isAvailable) {
 			listModal.removeAllElements();
 			listModal.addAll(titleSHMap.values());
-			successMgs( searchCounter+" results matched");
-		}else {
+			successMgs(searchCounter + " results matched");
+		} else {
 			failureMgs("None Found!");
 		}
 	}
 
-	 static void updateListModal() {
+	static void updateListModal() {
 		listModal.removeAllElements();
 		listModal.addAll(titleHMap.values());
 		list.repaint();
-		
 	}
 
 	@Override
@@ -230,9 +253,45 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 			// calling the method to create a new note with custom parameters
 			newNote();
 
-		} else if(e.getSource() == searchField) {
+		} else if (e.getSource() == searchField) {
 			System.out.println(e.getSource());
+
+		} else if (e.getSource() == trashBtn) {
+			recycleMode(recycleMod);
+
 		}
+	}
+
+	void recycleMode(boolean mod) {
+		if (!mod) {
+
+			nFrameBtn.setText("Recycle Center");
+			nFrameBtn.setEnabled(mod);
+			nFrameBtn.setBackground(dColor);
+			listModal.removeAllElements();
+			listModal.addAll(titleSHMapDEL.values());
+			list.setBackground(lpr);
+			list.setForeground(blu);
+			System.out.println(titleSHMapDEL);
+			recycleMod = true;
+
+		} else {
+			nFrameBtn.setText("New Note");
+			nFrameBtn.setBackground(dColor);
+			nFrameBtn.setEnabled(mod);
+			nFrameBtn.enableInputMethods(true);
+			updateListModal();
+			list.setBackground(blu);
+			list.setForeground(Color.WHITE);
+			recycleMod = false;
+
+		}
+
+	}
+	
+	static void reload()
+	{
+		dataBase.loadDataFromDB();
 	}
 
 	@Override
@@ -243,17 +302,25 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 	public void valueChanged(ListSelectionEvent e) {
 
 		String currKey = list.getSelectedValue();
-		if (list.getValueIsAdjusting() && titleHMap.containsValue(currKey)) {
-			
+
+		if (list.getValueIsAdjusting() && titleHMap.containsValue(currKey) && !recycleMod) {
+
 			for (int id : titleHMap.keySet()) {
-				
+
 				if (currKey == titleHMap.get(id)) {
-					
+
 					openNote(id, titleHMap.get(id), textHMap.get(id));
 				}
 			}
-		} else {
+		} else if (list.getValueIsAdjusting() && titleSHMapDEL.containsValue(currKey) && recycleMod) {
 
+			for (int id : titleSHMapDEL.keySet()) {
+
+				if (currKey == titleSHMapDEL.get(id)) {
+
+					new DisabledNote(id, titleSHMapDEL.get(id), textSHMapDEL.get(id));
+				}
+			}
 		}
 
 	}
@@ -263,52 +330,50 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 
 	}
 
-
-	 void successMgs(String msg) {
+	void successMgs(String msg) {
 
 		logUpdater.setText(msg);
-		btmFrame.setBackground(new Color(144, 238, 144)); //
+		btmFrame.setBackground(new Color(144, 238, 144));
+		bottom.setBackground(new Color(144, 238, 144));
 		// btmFrame.setBackground(new Color(204,204,204));
 	}
-	 
-	 void failureMgs(String msg) {
+
+	void failureMgs(String msg) {
 
 		logUpdater.setText(msg);
 		btmFrame.setBackground(new Color(250, 95, 85)); //
+		bottom.setBackground(new Color(250, 95, 85));
 		// btmFrame.setBackground(new Color(204,204,204));
 	}
-	
-	//updating counter
+
+	// updating counter
 	private void upDateCounter() {
 		counter = dataBase.getNoRows();
-		notesCounter.setText("Notes Count : " + counter); //Note Counter Label 
+		notesCounter.setText("Notes Count : " + counter); // Note Counter Label
 	}
 
 	@Override
 	public void keyTyped(KeyEvent e) {
-		//searchAndUpdateList(searchField.toString());	
+		// searchAndUpdateList(searchField.toString());
 	}
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		
+
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		
-		if(searchField.getText().length() == 0) {
+
+		if (searchField.getText().length() == 0) {
 			listModal.addAll(titleHMap.values());
 			notesCounter.setText("Notes Count : " + counter);
 			updateListModal();
 			successMgs(" ...");
-		} else if(searchField.getText().length() >= 1) {
+		} else if (searchField.getText().length() >= 1) {
 			searchAndUpdateList(searchField.getText());
 		}
-		
-		
+
 	}
-
-
 
 }
