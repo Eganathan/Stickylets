@@ -376,7 +376,8 @@ public class Leafs implements ActionListener, KeyListener {
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-
+		
+		charCountLabel.setText("Char :" + tArea.getText().length());
 		if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
 
 			DBTEXT.deleteCharAt(DBTEXT.length() - 1);
@@ -389,7 +390,6 @@ public class Leafs implements ActionListener, KeyListener {
 
 		capitalizeText(); // Capitalize the First Letter using the method
 		getWordCount(); // word count method
-		charCountLabel.setText("Char :" + tArea.getText().length());
 
 		if (tArea.getText().charAt(tArea.getText().toString().length() - 1) == ' '
 				&& e.getKeyCode() != KeyEvent.VK_BACK_SPACE && e.getKeyCode() != 16 && e.getKeyCode() != 11) {

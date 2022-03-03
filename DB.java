@@ -10,22 +10,17 @@ import java.sql.Statement;
 public class DB {
 
 	private String url = "jdbc:mysql://localhost:3306/test_db";
-	private String ddUserName = "root";
-	private String dbPass = "1234";
 	private Connection conn = null;
-	private String tableName = "notes_test";
-	private String dbName = "test_db";
-	private String dataBaseNdTblName = "test_db.notes_test";
-	private boolean isConnected = false;
-
 	DB() {
+		
+	
+		
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection(url, "root", "1234");
 
 			// Do something with the Connection
 
-			isConnected = true;
 			System.out.println("DONE");
 		} catch (SQLException ex) {
 			// handle any errors
@@ -33,9 +28,10 @@ public class DB {
 			System.out.println("SQLState: " + ex.getSQLState());
 			System.out.println("VendorError: " + ex.getErrorCode());
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		
 	}
 
 	void startConn() {
@@ -45,14 +41,12 @@ public class DB {
 
 			// Do something with the Connection
 
-			isConnected = true;
 		} catch (SQLException ex) {
 			// handle any errors
 			System.out.println("SQLException: " + ex.getMessage());
 			System.out.println("SQLState: " + ex.getSQLState());
 			System.out.println("VendorError: " + ex.getErrorCode());
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -82,7 +76,6 @@ public class DB {
 			}
 			statement.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -102,7 +95,6 @@ public class DB {
 			statement.execute(sql);
 			statement.close();
 			conn.close();
-			isConnected = false;
 		} catch (SQLException e) {
 			e.printStackTrace();
 
@@ -202,7 +194,7 @@ public class DB {
 		try {
 
 			Statement statement = conn.prepareStatement(sql);
-			int s1 = statement.executeUpdate(sql);
+			statement.executeUpdate(sql);
 			statement.close();
 			Notes.titleHMap.remove(id);
 			Notes.textHMap.remove(id);
@@ -215,7 +207,6 @@ public class DB {
 	}
 
 	void updateRestore(int id, int action, String title, String text) {
-		boolean insert = false;
 		dealConn();
 		if (action == 1) {
 
@@ -224,7 +215,7 @@ public class DB {
 			try {
 
 				Statement statement = conn.prepareStatement(sql);
-				int s1 = statement.executeUpdate(sql);// execute(sql);
+				statement.executeUpdate(sql);
 				Notes.titleHMap.put(id, title);
 				Notes.textHMap.put(id, text);
 				statement.close();
@@ -241,7 +232,7 @@ public class DB {
 			try {
 
 				Statement statement = conn.prepareStatement(sql);
-				int s1 = statement.executeUpdate(sql);// execute(sql);
+				statement.executeUpdate(sql);
 				statement.close();
 
 			} catch (SQLException e) {

@@ -113,11 +113,11 @@ class DisabledNote implements ActionListener{
 		
 	}
 	
-	 int closeOperation(){
+	 int  closeOperation(){
 		 disabledLeafFrame.setVisible(false);
 		 disabledLeafFrame.dispose();
 		 
-		 return 1;
+		 return 0;
 	 }
 
 	@Override

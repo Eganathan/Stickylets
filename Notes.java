@@ -80,7 +80,7 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 		// setBorder(new EmptyBorder(0, 0, 0, 0));
 
 		nFrameBtn = new JButton("New Note"); // Main frame title
-		nFrameBtn.setBackground(lpr); // sets the background
+		nFrameBtn.setBackground(dColor); // sets the background
 		nFrameBtn.setForeground(blu);
 		nFrameBtn.setFocusable(false);
 		nFrameBtn.setFont(new Font("sans", Font.BOLD, 25)); // setting the fonts
@@ -254,7 +254,7 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 			newNote();
 
 		} else if (e.getSource() == searchField) {
-			System.out.println(e.getSource());
+			//System.out.println(e.getSource());
 
 		} else if (e.getSource() == trashBtn) {
 			recycleMode(recycleMod);
@@ -264,7 +264,7 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 
 	void recycleMode(boolean mod) {
 		if (!mod) {
-
+			recycleMod = true;
 			nFrameBtn.setText("Recycle Center");
 			nFrameBtn.setEnabled(mod);
 			nFrameBtn.setBackground(dColor);
@@ -272,8 +272,8 @@ public class Notes extends JFrame implements ActionListener, ListSelectionListen
 			listModal.addAll(titleSHMapDEL.values());
 			list.setBackground(lpr);
 			list.setForeground(blu);
-			System.out.println(titleSHMapDEL);
-			recycleMod = true;
+			//System.out.println(titleSHMapDEL);
+			
 
 		} else {
 			nFrameBtn.setText("New Note");
